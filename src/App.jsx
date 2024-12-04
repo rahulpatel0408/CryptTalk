@@ -1,8 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import React,{lazy} from "react";
 import "./App.css";
-import Home from "./pages/Home";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
+
+
+const Home = lazy(()=>import("./pages/Home"));
+const Login = lazy(()=>import("./pages/Login"));
+const Register = lazy(()=>import("./pages/Register"));
+
 
 function App() {
   return (
