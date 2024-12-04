@@ -47,7 +47,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-    <div className="signup">Don't have a account?<strong><a href="/register"> Register Now</a></strong></div>
+    <div className="signup">Don't have an account?<strong><a href="/register"> Register Now</a></strong></div>
     </>
 
 
