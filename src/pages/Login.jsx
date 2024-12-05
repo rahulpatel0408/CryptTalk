@@ -3,6 +3,7 @@ import './Login.css'
 import passwd_icon from './../assets/LoginSignup/psswd.svg'
 import user_icon from './../assets/LoginSignup/user.svg'
 import logo from './../assets/LoginSignup/logo.png'
+import { NavLink } from 'react-router-dom'
 
 
 const Login = () => {
@@ -39,7 +40,7 @@ const Login = () => {
           <div className="input">
             <input type="password" placeholder="Password" onChange={handlePasswordChange}/>
             <img src={passwd_icon} alt="" />
-            <div className="forgot"><a href="/reset">Forgot password?</a></div>
+            <div className="forgot"><NavLink to="/reset">Forgot password?</NavLink></div>
           </div>
         </div>
         <div className="submit-container">
@@ -47,7 +48,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-    <div className="signup">Don't have an account?<strong><a href="/register"> Register Now</a></strong></div>
+    <div className="signup">Don't have an account?<strong><NavLink to="/register"> Register Now</NavLink></strong></div>
     </>
 
 
