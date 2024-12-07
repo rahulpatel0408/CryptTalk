@@ -4,11 +4,13 @@ import logo_icon from "./../../assets/LoginSignup/logo.png"
 import { NotificationsActiveRounded as NotificationsActiveRoundedIcon , Logout as LogoutIcon, Group as GroupIcon, GroupAdd as GroupAddIcon, Menu as MenuIcon, Search as SearchIcon, GroupAdd } from "@mui/icons-material"
 import { useNavigate } from 'react-router-dom';
 import Notifications from '../specific/Notifications';
+import NewGroup from '../specific/NewGroup';
 
 const Header = () => {
   const userName = 'name' //
   const pathToProfilePicture = '' //baad mai karunga
-
+  
+  const [isNewGroup, setIsNewGroup] = useState(false);
   const navigate = useNavigate();
 
   const navigateToGroup = () => navigate("/group")
@@ -20,9 +22,14 @@ const Header = () => {
     // for later
   }
   const openNewGroup = () => {
-    // for later
+    setIsNewGroup(true);
+    
   }
-  
+  const closeNewGroup = () => {
+    setIsNewGroup(false);
+    
+  }
+
   const [anchorElNotification, setAnchorElNotification] = useState(null);
 
   const handleNotificationMenuOpen = (event) => {
@@ -114,6 +121,11 @@ const Header = () => {
               handleNotificationMenuClose={handleNotificationMenuClose}
               
             />
+            {
+              isNewGroup&&(
+                <NewGroup handleCloseNewGroup={closeNewGroup}/>
+              )
+            }
 
           </Box>
         </Toolbar>
