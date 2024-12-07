@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import React, { lazy } from "react";
+import React, { lazy, Suspense } from "react";
 import "./App.css";
 import ProtectRoute from "./components/auth/ProtectRoute";
 import NotFound from "./pages/NotFound";
@@ -7,18 +7,23 @@ import NotFound from "./pages/NotFound";
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
+const Chat = lazy(() => import("./pages/Chat"));
 
 let user = true;
 
 function App() {
   return (
-    <>
-      <BrowserRouter>
+    <BrowserRouter>
+      <Suspense fallback={<div>Loading...</div>}>
         <Routes>
+          {/* Protected Routes */}
           <Route element={<ProtectRoute user={user} />}>
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/chat/:chatId" element={<Chat />} />
           </Route>
+
+          {/* Login Route */}
           <Route
             path="/login"
             element={
@@ -27,11 +32,12 @@ function App() {
               </ProtectRoute>
             }
           />
-          <Route path="*" element={<NotFound />}/>
-        </Routes>
 
-      </BrowserRouter>
-    </>
+          {/* Fallback Route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   );
 }
 

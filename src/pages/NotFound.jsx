@@ -2,7 +2,7 @@ import React from 'react'
 
 const NotFound = () => {
   return (
-    <div>NotFound</div>
+    <div style={{color:"green"}}>NotFound</div>
   )
 }
 

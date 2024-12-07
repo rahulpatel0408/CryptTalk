@@ -1,10 +1,9 @@
 import { Divider, AppBar, Box, Toolbar, Menu, MenuItem, Typography, Avatar, IconButton, Tooltip } from '@mui/material';
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import logo_icon from "./../../assets/LoginSignup/logo.png"
 import { NotificationsActiveRounded as NotificationsActiveRoundedIcon , Logout as LogoutIcon, Group as GroupIcon, GroupAdd as GroupAddIcon, Menu as MenuIcon, Search as SearchIcon, GroupAdd } from "@mui/icons-material"
 import { useNavigate } from 'react-router-dom';
 import Notifications from '../specific/Notifications';
-
 
 const Header = () => {
   const userName = 'name' //
@@ -62,6 +61,7 @@ const Header = () => {
 
 
   return (
+    <>
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
         position="fixed"
@@ -86,7 +86,7 @@ const Header = () => {
               <MenuIcon />
             </IconButton>
           </Box>
-
+  
           <Box sx={{ flexGrow: 1 }} />
           <Box>
 
@@ -115,12 +115,11 @@ const Header = () => {
               
             />
 
-
-
           </Box>
         </Toolbar>
       </AppBar>
     </Box>
+    </>
   );
 };
 
