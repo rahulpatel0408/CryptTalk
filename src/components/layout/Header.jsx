@@ -167,7 +167,7 @@ const Header = () => {
       </Box>
       {isSearch && (
         <Suspense fallback={<div>loading.....</div>}>
-          <Search />
+          <Search handler={openSearchDailog} />
         </Suspense>
       )}
     </>

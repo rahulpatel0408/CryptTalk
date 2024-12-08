@@ -1,4 +1,4 @@
-import { Avatar, Stack, Typography } from "@mui/material";
+import { Avatar, Stack, Typography,Box } from "@mui/material";
 import React from "react";
 import {
   Face as FaceIcon,
@@ -6,9 +6,35 @@ import {
   CalendarMonth as CalendarIcon,
 } from "@mui/icons-material";
 import moment from "moment";
+
+
 const Profile = () => {
   return (
-    <Stack spacing={"2rem"} direction={"column"} alignItems={"center"}>
+    <Box sx={{
+        height:"100vh",
+        width:'100vw',
+        display:'flex',
+        alignItems:'center',
+        justifyContent:'center',
+    }}>
+    <Box sx={{
+            paddingY:'80px',
+            paddingX:'80px',
+            display: "flex",
+            backgroundColor: "#f0f0f0",
+            borderRadius: "25px", 
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", 
+            alignItems: "center",
+            justifyContent: "center",
+          
+    }}>
+    <Stack sx={{
+        display:'flex',
+        height :'100%',
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    spacing={"2rem"} direction={"column"} alignItems={"center"}>
       <Avatar
         sx={{
           width: 200,
@@ -53,6 +79,8 @@ const Profile = () => {
         }
       />
     </Stack>
+    </Box>
+    </Box>
   );
 };
 

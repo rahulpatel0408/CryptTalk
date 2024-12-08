@@ -34,4 +34,74 @@ export const sampleUsers = [
     name: "Rahul",
     _id: "2",
   },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rajat",
+    _id: "11",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rahul",
+    _id: "21",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rajat",
+    _id: "111",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rahul",
+    _id: "211",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rajat",
+    _id: "1",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rahul",
+    _id: "2",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rajat",
+    _id: "11",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rahul",
+    _id: "21",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rajat",
+    _id: "111",
+  },
+  {
+    avatar: [
+      "https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    ],
+    name: "Rahul",
+    _id: "211",
+  },
 ];
