@@ -9,6 +9,7 @@ const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Chat = lazy(() => import("./pages/Chat"));
+const Groups = lazy(() => import("./pages/Groups"));
 
 let user = true;
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/chat/:chatId" element={<Chat />} />
+            <Route path="/groups" element={<Groups />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
 

@@ -34,7 +34,7 @@ const Header = () => {
   const [isNewGroup, setIsNewGroup] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
 
-  const navigateToGroup = () => navigate("/group");
+  const navigateToGroup = () => navigate("/groups");
 
   const handleMobile = () => {
     // for later
