@@ -52,7 +52,7 @@ const Header = () => {
   }
 
   const handleProfileClick = () => {
-    //later
+    navigate('/profile')
     handleMenuClose();
   };
 
