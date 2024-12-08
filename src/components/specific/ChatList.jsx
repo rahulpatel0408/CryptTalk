@@ -40,7 +40,7 @@ const ChatList = ({
             handleDeleteChat={handleDeleteChat}
           />
         );
-      })}
+      })}  
     </Stack>
   );
 };

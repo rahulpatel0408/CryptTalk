@@ -85,11 +85,14 @@ const Header = () => {
   };
 
   return (
-    <>
-      <Box sx={{ flexGrow: 1 }}>
+    
+      <Box sx={{
+        display:"flex",
+      }}>
         <AppBar
-          position="fixed"
+          position="sticky"
           sx={{
+            display:'flex',
             bgcolor: "#FFFFFF",
             // height:"70px",
             borderRadius: "0 0 15px 15px",
@@ -164,13 +167,13 @@ const Header = () => {
             </Box>
           </Toolbar>
         </AppBar>
+        {isSearch && (
+          <Suspense fallback={<div>loading.....</div>}>
+            <Search handler={openSearchDailog} />
+          </Suspense>
+        )}
       </Box>
-      {isSearch && (
-        <Suspense fallback={<div>loading.....</div>}>
-          <Search handler={openSearchDailog} />
-        </Suspense>
-      )}
-    </>
+    
   );
 };
 

@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "./Header";
 import Title from "../shared/Title";
-import { Grid2 } from "@mui/material";
+import { Grid2,Box, Divider } from "@mui/material";
 import ChatList from "../specific/ChatList";
 import { sampleChats } from "../constants/SampleData2";
 import { useParams } from "react-router-dom";
@@ -19,12 +19,13 @@ const AppLayout = () => (WrappedComponent) => {
       <>
         <Title />
         <Header />
+        <Box >
         <Grid2
           container
           sx={{
-            marginTop: "65px",
-            height: "100vh",
-            width: "100vw",
+            height:"calc(100vh - 65px)",
+            flexgrow:1,
+            display:'flex',
           }}
         >
           <Grid2
@@ -41,10 +42,12 @@ const AppLayout = () => (WrappedComponent) => {
               handleDeleteChat={handleDeleteChat}
             />
           </Grid2>
-          <Grid2 size={9} height={"100%"} bgcolor="#f3f4f6">
+          <Divider orientation="vertical" variant="middle" flexItem></Divider>
+          <Grid2 sx={{ flexGrow: 1 }} height={"100%"} bgcolor="#f3f4f6">
             <WrappedComponent {...props} />
           </Grid2>
         </Grid2>
+        </Box>
       </>
     );
   };
