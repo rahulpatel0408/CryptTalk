@@ -3,6 +3,7 @@ import React, { lazy, Suspense } from "react";
 import "./App.css";
 import ProtectRoute from "./components/auth/ProtectRoute";
 import NotFound from "./pages/NotFound";
+import Profile from "./components/specific/Profile";
 
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
@@ -21,9 +22,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/chat/:chatId" element={<Chat />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
-          {/* Login Route */}
           <Route
             path="/login"
             element={
@@ -33,7 +34,6 @@ function App() {
             }
           />
 
-          {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

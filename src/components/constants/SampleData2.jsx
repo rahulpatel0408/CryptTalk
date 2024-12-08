@@ -11,7 +11,7 @@ export const sampleChats = [
     avatar:["https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180"],
     name:"Rahul",
     _id:"2",
-    groupChat:false,
+    groupChat:true,
     members:["1","2"],
 }
 ]
