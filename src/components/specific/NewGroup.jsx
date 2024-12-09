@@ -4,14 +4,13 @@ import React, { useState } from 'react';
 import { sampleUsers } from '../constants/SampleData';
 
 const NewGroup = ({ handleCloseNewGroup }) => {
+    
     const [selectedMembers, setSelectedMembers] = useState([]);
-
     const selectMemberHandler = ({ _id }) => {
         setSelectedMembers((prev) =>
             prev.includes(_id) ? prev.filter((id) => id !== _id) : [...prev, _id]
         );
     };
-
 
     const submitHandler = () =>{
         console.log(selectedMembers, groupName)
