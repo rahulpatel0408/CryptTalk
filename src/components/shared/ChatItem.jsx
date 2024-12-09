@@ -60,12 +60,11 @@ const ChatItem = ({
             display: "flex",
             alignItems: "center",
             justifyContent: 'center',
-
           }}>
             
             <AvatarCard avatar={avatar} />
             <Stack>
-              <Typography>{name}</Typography>
+              <Typography sx={{marginRight:"2rem"}}>{name}</Typography>
               {newMessageAlert && (
                 <Typography>{newMessageAlert.count} New Message</Typography>
               )}

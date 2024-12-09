@@ -105,3 +105,32 @@ export const sampleUsers = [
     _id: "211",
   },
 ];
+
+export const sampleMessage = [
+  {
+    attachments:[
+    ],
+    content:"Hii bhai kaisa hai",
+    _id:"djfjgjkfldgj",
+    sender:{
+      _id:"user_id",
+      name:"Rahul",
+    },
+    chat:"chatId",
+    createdAt:"2024-12-07T18:30:00.000Z",
+  },
+  {
+    attachments:[{
+      public_id:"asdsad 2",
+      url:"https://tse4.mm.bing.net/th?id=OIP.w1sMHUdLIzuHF6vaS9RRygHaIy&pid=Api&P=0&h=180",
+    },
+    ],
+    _id:"djfjgjkfldgj2",
+    sender:{
+      _id:"fsdjkgn",
+      name:"Raj",
+    },
+    chat:"chatId",
+    createdAt:"2024-12-07T18:30:00.000Z",
+  },
+];
