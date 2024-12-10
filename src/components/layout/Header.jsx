@@ -35,6 +35,7 @@ const Header = () => {
   const [isSearch, setIsSearch] = useState(false);
 
   const navigateToGroup = () => navigate("/groups");
+  const navigatetoHome = () => navigate("/");
 
   const handleMobile = () => {
     // for later
@@ -102,7 +103,9 @@ const Header = () => {
             <Avatar
               alt="logo"
               src={logo_icon}
+              onClick={navigatetoHome}
               sx={{
+                cursor:"pointer",
                 marginLeft: "10px",
                 marginTop: "15px",
                 width: "150px",

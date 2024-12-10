@@ -30,8 +30,8 @@ const ConfirmDeleteDialog = lazy(() =>
 );
 
 const AddMemberDialog = lazy(() =>
-    import("../components/dailogs/AddMemberDialog")
-  );
+  import("../components/dailogs/AddMemberDialog")
+);
 
 const isAddMember = false;
 
@@ -78,13 +78,13 @@ const Groups = () => {
     closeConfirmDeleteHandler();
   }
 
-  const removeMemberHandler=()=>{};
+  const removeMemberHandler = () => { };
 
   useEffect(() => {
-   if(chatId){
-    setGroupName(`Group Name ${chatId}`);
-    setGroupNameUpdatedValue(`Group Name ${chatId}`);
-   }
+    if (chatId) {
+      setGroupName(`Group Name ${chatId}`);
+      setGroupNameUpdatedValue(`Group Name ${chatId}`);
+    }
     return () => {
       setGroupName("");
       setGroupNameUpdatedValue("");
@@ -172,8 +172,15 @@ const Groups = () => {
         sm: "1rem",
         md: "1rem 4rem",
       }}
+      sx={{
+        display:"flex",
+        justifyContent:"center",
+      }}
     >
       <Button
+        sx={{
+          display: "flex",
+        }}
         size="large"
         color="error"
         startIcon={<DeleteIcon />}
@@ -182,6 +189,9 @@ const Groups = () => {
         Delete Group
       </Button>
       <Button
+        sx={{
+          display: "flex",
+        }}
         size="large"
         variant="contained"
         startIcon={<AddIcon />}
@@ -228,6 +238,7 @@ const Groups = () => {
           alignItems: "center",
           position: "relative",
           padding: "1rem 3rem",
+          display:"flex"
         }}
       >
         {IconBtns}
@@ -236,10 +247,16 @@ const Groups = () => {
             {GroupName}
             <Typography
               margin={"2rem"}
-              alignSelf={"flex-start"}
+              // alignSelf={"flex-start"}
               variant="body1"
+              color={"#000000"}
+              sx={{
+                dispay:'flex',
+                alignItems:"center",
+                justifyContent:'center'
+              }}
             >
-              Members
+              <strong>Members</strong>
             </Typography>
             <Stack
               maxWidth={"45rem"}
@@ -252,23 +269,37 @@ const Groups = () => {
               }}
               spacing={"2rem"}
               height={"50vh"}
-              bgcolor={"bisque"}
+              bgcolor={"#ffffff"}
+              color={'black'}
               overflow={"auto"}
+              sx={{
+                display:"flex",
+                alignItems:"center",
+                // justifyContent:"center",
+                '& .MuiPaper-root': {
+                    borderRadius: '20px',
+                    overflowY: 'auto',
+                    scrollbarWidth: 'none',
+                    '&::-webkit-scrollbar': {
+                        display: 'none',
+                    }
+                },
+              }}
             >
-            {
-                sampleUsers.map((i)=>(
-                    <UserItem 
+              {
+                sampleUsers.map((i) => (
+                  <UserItem
                     key={i._id}
                     user={i} isAdded
                     styling={{
-                        boxShadow:"0 0 0.5rem rgba(0,0,0,0.2)",
-                        padding:"1rem 2rem",
-                        borderRadius:"1rem"
+                      boxShadow: "0 0 0.5rem rgba(0,0,0,0.2)",
+                      padding: "1rem 2rem",
+                      borderRadius: "1rem"
                     }}
                     handler={removeMemberHandler}
-                    />
+                  />
                 ))
-            }
+              }
             </Stack>
             {ButtonGroup}
           </>
@@ -276,10 +307,10 @@ const Groups = () => {
       </Grid>
 
       {
-        isAddMember &&  (
-            <Suspense fallback={<div>Loading.....</div>}>
-                <AddMemberDialog />
-            </Suspense>
+        isAddMember && (
+          <Suspense fallback={<div>Loading.....</div>}>
+            <AddMemberDialog />
+          </Suspense>
         )
       }
 

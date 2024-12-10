@@ -133,4 +133,52 @@ export const sampleMessage = [
     chat:"chatId",
     createdAt:"2024-12-07T18:30:00.000Z",
   },
+  {
+    attachments:[
+    ],
+    content:"Hii bhai kaisa hai",
+    _id:"djfjgjkfldgj",
+    sender:{
+      _id:"user_id",
+      name:"Rahul",
+    },
+    chat:"chatId",
+    createdAt:"2024-12-07T18:30:00.000Z",
+  },
+  {
+    attachments:[
+    ],
+    content:"Hii bhai kaisa hai",
+    _id:"djfjgjkfldgj",
+    sender:{
+      _id:"user_id",
+      name:"Rahul",
+    },
+    chat:"chatId",
+    createdAt:"2024-12-07T18:30:00.000Z",
+  },
+  {
+    attachments:[
+    ],
+    content:"Hii bhai kaisa hai",
+    _id:"djfjgjkfldgj",
+    sender:{
+      _id:"user_id",
+      name:"Rahul",
+    },
+    chat:"chatId",
+    createdAt:"2024-12-07T18:30:00.000Z",
+  },
+  {
+    attachments:[
+    ],
+    content:"Hii bhai kaisa hai",
+    _id:"djfjgjkfldgj",
+    sender:{
+      _id:"user_id",
+      name:"Rahul",
+    },
+    chat:"chatId",
+    createdAt:"2024-12-07T18:30:00.000Z",
+  },
 ];
