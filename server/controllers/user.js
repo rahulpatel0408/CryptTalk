@@ -46,19 +46,24 @@ const getMyProfile = TryCatch(async (req, res) => {
 });
 
 const logout = TryCatch(async (req, res) => {
-  res.status(200).cookie("ChatCrypt-token", "",{...cookieOptions, maxAge:0}).json({
-    success: true,
-    message: "logout successfully",
-  });
+  res
+    .status(200)
+    .cookie("ChatCrypt-token", "", { ...cookieOptions, maxAge: 0 })
+    .json({
+      success: true,
+      message: "logout successfully",
+    });
 });
 
 const searchUser = TryCatch(async (req, res) => {
-  
-  const {name} = req.query;
-  res.status(200).cookie("ChatCrypt-token", "",{...cookieOptions, maxAge:0}).json({
-    success: true,
-    message: name,
-  });
+  const { name } = req.query;
+  res
+    .status(200)
+    .cookie("ChatCrypt-token", "", { ...cookieOptions, maxAge: 0 })
+    .json({
+      success: true,
+      message: name,
+    });
 });
 
 export { login, newUser, getMyProfile, logout, searchUser };

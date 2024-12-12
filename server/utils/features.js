@@ -26,14 +26,23 @@ const sendToken = (res, user, code, message) => {
   );
 
   return res.status(code).cookie("ChatCrypt-token", token, cookieOptions).json({
-    success:true,
+    success: true,
     message,
   });
 };
 
-const emitEvent = (req, event, users, data) =>{
+const emitEvent = (req, event, users, data) => {
   console.log("emitting event", event);
 };
 
+const deleteFilesFromCloudinary = async (public_ids) => {
+  //delete files
+};
 
-export { connectDB, sendToken, cookieOptions, emitEvent };
+export {
+  connectDB,
+  sendToken,
+  cookieOptions,
+  emitEvent,
+  deleteFilesFromCloudinary,
+};
