@@ -7,11 +7,11 @@ import { cookieOptions, emitEvent, sendToken } from "../utils/features.js";
 import { ErrorHandler } from "../utils/utility.js";
 import { NEW_REQUEST, REFETCH_CHATS } from "../constants/events.js";
 
-const newUser = TryCatch(async (req, res) => {
+const newUser = TryCatch(async (req, res, next) => {
   const { name, username, password, bio } = req.body;
 
   const file = req.file;
-  if(!file) return next(new ErrorHandler("Please upload Avatar"));
+  if (!file) return next(new ErrorHandler("Please upload Avatar"));
 
   const avatar = {
     public_id: "sdfs",
@@ -64,14 +64,13 @@ const logout = TryCatch(async (req, res) => {
 const searchUser = TryCatch(async (req, res) => {
   const { name = "" } = req.query;
 
-  const myChats = await Chat.find({groupChat: false, members:req.user }); 
-  const myFriends = myChats.map((chat)=>chat.members).flat(); //also contains taht user several times
+  const myChats = await Chat.find({ groupChat: false, members: req.user });
+  const myFriends = myChats.map((chat) => chat.members).flat(); //also contains taht user several times
   const restUsers = await User.find({
-    _id:{ $nin : myFriends},
-    name:{$regex: name, $options: 'i'},
-
+    _id: { $nin: myFriends },
+    name: { $regex: name, $options: "i" },
   });
-  const users = restUsers.map(({_id, name, avatar}) =>({
+  const users = restUsers.map(({ _id, name, avatar }) => ({
     _id,
     name,
     avatar: avatar.url,
@@ -173,6 +172,12 @@ const getMyNotifications = TryCatch(async (req, res) => {
   });
 });
 
+const getOtherMembers = (memebers, userId) => {
+  return memebers.find(
+    (members) => members._id.toString() !== userId.toString()
+  );
+};
+
 const getMyFriends = TryCatch(async (req, res) => {
   const chatId = req.query.chatId;
 
@@ -182,7 +187,7 @@ const getMyFriends = TryCatch(async (req, res) => {
   }).populate("members", "name avatar");
 
   const friends = chats.map(({ members }) => {
-    const otherUser = getOtherMember(members, req.user);
+    const otherUser = getOtherMembers(members, req.user);
 
     return {
       _id: otherUser._id,
@@ -210,6 +215,14 @@ const getMyFriends = TryCatch(async (req, res) => {
   }
 });
 
-
-export { getMyProfile, login, logout, newUser, searchUser, sendFriendRequest, getMyFriends, getMyNotifications,acceptFriendRequest };
-
+export {
+  getMyProfile,
+  login,
+  logout,
+  newUser,
+  searchUser,
+  sendFriendRequest,
+  getMyFriends,
+  getMyNotifications,
+  acceptFriendRequest,
+};

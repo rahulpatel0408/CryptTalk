@@ -221,6 +221,9 @@ const sendAttachments = TryCatch(async (req, res, next) => {
   const files = req.files || [];
 
   if (files.length < 1) return next(new ErrorHandler("No files attached", 400));
+
+  if (files.length > 5) return next(new ErrorHandler("files can not be more than 5", 400));
+
   const attachments = [];
   const messageForDB = {
     content: "",
@@ -263,7 +266,7 @@ const getChatDetails = TryCatch(async (req, res, next) => {
     chat.members = chat.members.map(({ _id, name, avatar }) => ({
       _id,
       name,
-      avatar: avatar?.url, 
+      avatar: avatar?.url,
     }));
     return res.status(200).json({
       success: true,
