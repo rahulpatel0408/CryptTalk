@@ -221,9 +221,6 @@ const sendAttachments = TryCatch(async (req, res, next) => {
   const files = req.files || [];
 
   if (files.length < 1) return next(new ErrorHandler("No files attached", 400));
-
-  //upload files
-
   const attachments = [];
   const messageForDB = {
     content: "",
@@ -266,7 +263,7 @@ const getChatDetails = TryCatch(async (req, res, next) => {
     chat.members = chat.members.map(({ _id, name, avatar }) => ({
       _id,
       name,
-      avatar: avatar?.url, // Handle potential null value for avatar
+      avatar: avatar?.url, 
     }));
     return res.status(200).json({
       success: true,
@@ -325,7 +322,7 @@ const deleteChat = TryCatch(async (req, res, next) => {
       new ErrorHandler("You are not allowed to delete the chat", 403)
     );
 
-  //here we have to delete all messages and attachments from cloudinary
+  //cloudinary wala kaam
 
   const messagesWithAttachments = await Message.find({
     chat: chatId,

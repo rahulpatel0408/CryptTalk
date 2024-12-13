@@ -11,7 +11,7 @@ const Register = lazy(() => import("./pages/Register"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Groups = lazy(() => import("./pages/Groups"));
 
-let user = true;
+let user = false;
 
 function App() {
   return (
@@ -32,6 +32,14 @@ function App() {
             element={
               <ProtectRoute user={!user} redirect="/">
                 <Login />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <ProtectRoute user={!user} redirect="/">
+                <Register />
               </ProtectRoute>
             }
           />
