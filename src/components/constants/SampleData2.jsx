@@ -139,7 +139,7 @@ export const sampleMessage = [
     content:"Hii bhai kaisa hai",
     _id:"djfjgjkfldgj",
     sender:{
-      _id:"user_id",
+      _id:"user_id1",
       name:"Rahul",
     },
     chat:"chatId",
@@ -151,7 +151,7 @@ export const sampleMessage = [
     content:"Hii bhai kaisa hai",
     _id:"djfjgjkfldgj",
     sender:{
-      _id:"user_id",
+      _id:"user_id2",
       name:"Rahul",
     },
     chat:"chatId",
@@ -163,7 +163,7 @@ export const sampleMessage = [
     content:"Hii bhai kaisa hai",
     _id:"djfjgjkfldgj",
     sender:{
-      _id:"user_id",
+      _id:"user_id4",
       name:"Rahul",
     },
     chat:"chatId",
@@ -175,7 +175,7 @@ export const sampleMessage = [
     content:"Hii bhai kaisa hai",
     _id:"djfjgjkfldgj",
     sender:{
-      _id:"user_id",
+      _id:"user_id5",
       name:"Rahul",
     },
     chat:"chatId",

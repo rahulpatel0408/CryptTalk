@@ -24,12 +24,18 @@ import {
 import { useNavigate } from "react-router-dom";
 import Notifications from "../specific/Notifications";
 import NewGroup from "../specific/NewGroup";
+import axios from "axios";
+import { server } from "../constants/config";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { userNotExists } from "../../redux/reducers/auth";
 const Search = lazy(() => import("../specific/Search"));
 const Header = () => {
   const userName = "name"; //
   const pathToProfilePicture = ""; //baad mai karunga
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [isNewGroup, setIsNewGroup] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
@@ -41,7 +47,7 @@ const Header = () => {
     // for later
   };
   const openSearchDailog = () => {
-    setIsSearch((prev)=>!prev);
+    setIsSearch((prev) => !prev);
   };
   const openNewGroup = () => {
     setIsNewGroup(true);
@@ -71,12 +77,20 @@ const Header = () => {
   };
 
   const handleProfileClick = () => {
-    navigate('/profile')
+    navigate("/profile");
     handleMenuClose();
   };
 
-  const handleLogoutClick = () => {
-    //later
+  const handleLogoutClick = async () => {
+    try {
+      const { data } = await axios.get(`${server}/api/v1/user/logout`, {
+        withCredentials: true,
+      });
+      dispatch(userNotExists());
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "something went wrong");
+    }
     handleMenuClose();
   };
 
@@ -86,97 +100,97 @@ const Header = () => {
   };
 
   return (
-    
-      <Box sx={{
-        display:"flex",
-      }}>
-        <AppBar
-          position="sticky"
-          sx={{
-            display:'flex',
-            bgcolor: "#FFFFFF",
-            // height:"70px",
-            borderRadius: "0 0 15px 15px",
-          }}
-        >
-          <Toolbar disableGutters>
-            <Avatar
-              alt="logo"
-              src={logo_icon}
-              onClick={navigatetoHome}
-              sx={{
-                cursor:"pointer",
-                marginLeft: "10px",
-                marginTop: "15px",
-                width: "150px",
-                height: "50px",
-                variant: "square",
-                display: { xs: "none", sm: "block" },
-              }}
+    <Box
+      sx={{
+        display: "flex",
+      }}
+    >
+      <AppBar
+        position="sticky"
+        sx={{
+          display: "flex",
+          bgcolor: "#FFFFFF",
+          // height:"70px",
+          borderRadius: "0 0 15px 15px",
+        }}
+      >
+        <Toolbar disableGutters>
+          <Avatar
+            alt="logo"
+            src={logo_icon}
+            onClick={navigatetoHome}
+            sx={{
+              cursor: "pointer",
+              marginLeft: "10px",
+              marginTop: "15px",
+              width: "150px",
+              height: "50px",
+              variant: "square",
+              display: { xs: "none", sm: "block" },
+            }}
+          />
+
+          <Box
+            sx={{
+              display: { xs: "block", sm: "none" },
+            }}
+          >
+            <IconButton color="#0c6ba1" onClick={handleMobile}>
+              <MenuIcon />
+            </IconButton>
+          </Box>
+
+          <Box sx={{ flexGrow: 1 }} />
+          <Box>
+            <IconBtn
+              title={"Search"}
+              icon={<SearchIcon />}
+              onClick={openSearchDailog}
+            />
+            <IconBtn
+              title={"Add Group"}
+              icon={<GroupAddIcon />}
+              onClick={openNewGroup}
+            />
+            <IconBtn
+              title={"Manage Group"}
+              icon={<GroupIcon />}
+              onClick={navigateToGroup}
+            />
+            <IconBtn
+              title={"Notification"}
+              icon={<NotificationsActiveRoundedIcon />}
+              onClick={handleNotificationMenuOpen}
+            />
+            <IconBtn
+              title={"Profile"}
+              icon={<Avatar alt="user Profile" src={pathToProfilePicture} />}
+              onClick={handleMenuOpen}
             />
 
-            <Box
-              sx={{
-                display: { xs: "block", sm: "none" },
-              }}
-            >
-              <IconButton color="#0c6ba1" onClick={handleMobile}>
-                <MenuIcon />
-              </IconButton>
-            </Box>
-
-            <Box sx={{ flexGrow: 1 }} />
-            <Box>
-              <IconBtn
-                title={"Search"}
-                icon={<SearchIcon />}
-                onClick={openSearchDailog}
-              />
-              <IconBtn
-                title={"Add Group"}
-                icon={<GroupAddIcon />}
-                onClick={openNewGroup}
-              />
-              <IconBtn
-                title={"Manage Group"}
-                icon={<GroupIcon />}
-                onClick={navigateToGroup}
-              />
-              <IconBtn
-                title={"Notification"}
-                icon={<NotificationsActiveRoundedIcon />}
-                onClick={handleNotificationMenuOpen}
-              />
-              <IconBtn
-                title={"Profile"}
-                icon={<Avatar alt="user Profile" src={pathToProfilePicture} />}
-                onClick={handleMenuOpen}
-              />
-
-              <MenuRight
-                anchorEl={anchorEl}
-                handleMenuClose={handleMenuClose}
-                handleProfileClick={handleProfileClick}
-                handleSettingClick={handleSettingClick}
-                handleLogoutClick={handleLogoutClick}
-                userName={userName}
-                pathToProfilePicture={pathToProfilePicture}
-              />
-              <Notifications
-                anchorElNotification={anchorElNotification}
-                handleNotificationMenuClose={handleNotificationMenuClose}
-              />
-              {isNewGroup && <NewGroup handleCloseNewGroup={closeNewGroup} />}
-            </Box>
-          </Toolbar>
-        </AppBar>
-        {isSearch && (
-          <Suspense fallback={<div>loading.....</div>}>
-            <Search handler={openSearchDailog} />
-          </Suspense>
-        )}
-      </Box>
-    
+            <MenuRight
+              anchorEl={anchorEl}
+              handleMenuClose={handleMenuClose}
+              handleProfileClick={handleProfileClick}
+              handleSettingClick={handleSettingClick}
+              handleLogoutClick={handleLogoutClick}
+              userName={userName}
+              pathToProfilePicture={pathToProfilePicture}
+            />
+            <Notifications
+              anchorElNotification={anchorElNotification}
+              handleNotificationMenuClose={handleNotificationMenuClose}
+            />
+            {isNewGroup && <NewGroup handleCloseNewGroup={closeNewGroup} />}
+          </Box>
+        </Toolbar>
+      </AppBar>
+      {isSearch && (
+        <Suspense fallback={<div>loading.....</div>}>
+          <Search handler={openSearchDailog} />
+        </Suspense>
+      )}
+    </Box>
   );
 };
 
