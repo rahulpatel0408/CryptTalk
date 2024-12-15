@@ -13,6 +13,8 @@ import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
 import cors from "cors";
 import {v2 as cloudinary} from "cloudinary";
+import { corseOption } from "./constants/config.js";
+import { socketAuthenticator } from "./middlewares/auth.js";
 
 configDotenv({
   path: "./.env",
@@ -20,7 +22,7 @@ configDotenv({
 const mongoURI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 3000;
 
-const userSocketIDS = new Map();
+const userSocketIDs = new Map();
 connectDB(mongoURI);
 
 cloudinary.config({
@@ -33,16 +35,14 @@ cloudinary.config({
 const app = express();
 
 const server = createServer(app);
-const io = new Server(server, {});
+const io = new Server(server, {
+  cors:corseOption,
+});
 
 //using midddlewares here
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin:["http://localhost:5173","http://localhost:4173", process.env.CLIENT_URL],
-  credentials: true,
-
-}))
+app.use(cors(corseOption))
 
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/chat", chatRoute);
@@ -52,20 +52,21 @@ app.get("/", (req, res) => {
 });
 
 io.use((socket,next)=>{
-  //during frontend
+  cookieParser()(socket.request, socket.request.res,
+    async (err)=>{
+    await socketAuthenticator(err, socket, next);
+  })
 })
 
 io.on("connection", (socket) => {
-  const user = {
-    _id: "asdsda",
-    name: "John Doe",
-  };
+  const user = socket.user;
+  // console.log(user)
+  userSocketIDs.set(user._id.toString(), socket.id);
 
-  userSocketIDS.set(user._id.toString(), socket.id);
-
-  console.log(userSocketIDS);
+  
 
   socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
+
     const messageForRealTime = {
       content: message,
       _id: uuid(),
@@ -108,3 +109,5 @@ app.use(errorMiddleware);
 server.listen(PORT, () => {
   console.log(`server is listening on port ${PORT}`);
 });
+
+export  {userSocketIDs};

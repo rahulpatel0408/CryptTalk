@@ -81,7 +81,6 @@ const searchUser = TryCatch(async (req, res) => {
   }));
   res
     .status(200)
-    .cookie("ChatCrypt-token", "", { ...cookieOptions, maxAge: 0 })
     .json({
       success: true,
       users,
@@ -115,14 +114,13 @@ const sendFriendRequest = TryCatch(async (req, res, next) => {
 
 const acceptFriendRequest = TryCatch(async (req, res, next) => {
   const { requestId, accept } = req.body;
-
-  const request = await Request.findById(requestId)
-    .populate("sender", "name")
-    .populate("receiver", "name");
-
+  const request = await Request.findById(requestId);
+  const receiver_ = await User.findById(request.receiver);
+  const sender_ = await User.findById(request.sender);
+  
   if (!request) return next(new ErrorHandler("Request not found", 404));
 
-  if (request.receiver._id.toString() !== req.user.toString())
+  if (receiver_._id.toString() !== req.user.toString())
     return next(
       new ErrorHandler("You are not authorized to accept this request", 401)
     );
@@ -136,12 +134,12 @@ const acceptFriendRequest = TryCatch(async (req, res, next) => {
     });
   }
 
-  const members = [request.sender._id, request.receiver._id];
+  const members = [sender_._id, receiver_._id];
 
   await Promise.all([
     Chat.create({
       members,
-      name: `${request.sender.name}-${request.receiver.name}`,
+      name: `${sender_.name}-${receiver_.name}`,
     }),
     request.deleteOne(),
   ]);
@@ -151,7 +149,7 @@ const acceptFriendRequest = TryCatch(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     message: "Friend Request Accepted",
-    senderId: request.sender._id,
+    senderId: sender_._id,
   });
 });
 

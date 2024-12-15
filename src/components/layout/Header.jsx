@@ -27,27 +27,30 @@ import NewGroup from "../specific/NewGroup";
 import axios from "axios";
 import { server } from "../constants/config";
 import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { userNotExists } from "../../redux/reducers/auth";
+import { setIsMobile, setIsSearch } from "../../redux/reducers/misc";
 const Search = lazy(() => import("../specific/Search"));
 const Header = () => {
-  const userName = "name"; //
-  const pathToProfilePicture = ""; //baad mai karunga
-
+  const { user } = useSelector((state) => state.auth);
+  
+  const userName = user?.name; 
+  const pathToProfilePicture = user?.avatar?.url; 
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [isNewGroup, setIsNewGroup] = useState(false);
-  const [isSearch, setIsSearch] = useState(false);
-
+  const {isSearch} = useSelector(state=>state.misc)
+  
   const navigateToGroup = () => navigate("/groups");
   const navigatetoHome = () => navigate("/");
 
   const handleMobile = () => {
-    // for later
+    dispatch(setIsMobile(true));
   };
   const openSearchDailog = () => {
-    setIsSearch((prev) => !prev);
+    dispatch(setIsSearch(true));
   };
   const openNewGroup = () => {
     setIsNewGroup(true);

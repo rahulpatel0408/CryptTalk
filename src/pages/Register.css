@@ -14,8 +14,9 @@ a{
     flex-direction: column;
     margin:auto;
     background:#fff;
-    padding-bottom: 30px;
+    /* padding-bottom: 30px; */
     border-radius: 20px;
+
 }
 
 .header{
@@ -48,7 +49,7 @@ a{
 }
 
 .inputs{
-    margin-top: 55px;
+    margin-top: 20px;
     display:flex;
     flex-direction: column;
     gap: 25px;
@@ -79,7 +80,8 @@ a{
 
 .submit-container{
     display: flex;
-    margin-top: 60px;
+    margin-top: 25px;
+    margin-bottom: 10px;
 }
 
 .submit {
@@ -104,6 +106,7 @@ a{
 .signup{
     margin-top: 10px;
     color: black;
+    background-color:transparent;
     font-weight: 500;
 
 
