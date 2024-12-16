@@ -67,7 +67,7 @@ io.on("connection", (socket) => {
   
 
   socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
-
+    console.log(chatId, members, message)
     const messageForRealTime = {
       content: message,
       _id: uuid(),

@@ -65,16 +65,15 @@ const Chat = ({ chatId, user }) => {
     e.preventDefault();
     if (!message.trim()) return;
     socket.emit(NEW_MESSAGE, { chatId, members, message });
+    // console.log({ chatId, members, message })
     setMessage("");
   };
-
-  //console.log("ooldMessages", oldMessages);
-
+  
+  
   const newMessageHandler = useCallback((data) => {
     setMessages((prev) => [...prev, data.message]);
+    // console.log(data)
   }, []);
-
-  // console.log(messages);
 
   const eventsHandler = { [NEW_MESSAGE]: newMessageHandler };
   useSocketEvents(socket, eventsHandler);
@@ -82,7 +81,7 @@ const Chat = ({ chatId, user }) => {
   useErrors(errors);
 
   const allMessages = [...oldMessages, ...messages];
-
+  // console.log(allMessages)
   return chatDetails.isLoading ? (
     <Skeleton>Loading...</Skeleton>
   ) : (
