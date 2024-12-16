@@ -1,6 +1,7 @@
 import { Avatar, IconButton, ListItem, Stack, Typography } from "@mui/material";
 import React, { memo } from "react";
 import {Add as AddIcon} from "@mui/icons-material"
+import { tranformImage } from "../../lib/features";
 const UserItem = ({ user, handler, handlerIsLoading,isAdded=false, styling={},}) => {
   const { name, _id, avatar } = user;
   return (

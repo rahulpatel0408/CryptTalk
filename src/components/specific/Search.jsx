@@ -50,7 +50,7 @@ const Search = () => {
   },[search.value]);
 
   return (
-    <Dialog open onClose={closeSearchDailog}
+    <Dialog open={isSearch} onClose={closeSearchDailog}
     sx={{
         '& .MuiPaper-root': {
             borderRadius: '20px',

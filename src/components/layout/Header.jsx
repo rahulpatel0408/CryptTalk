@@ -33,16 +33,16 @@ import { setIsMobile, setIsSearch } from "../../redux/reducers/misc";
 const Search = lazy(() => import("../specific/Search"));
 const Header = () => {
   const { user } = useSelector((state) => state.auth);
-  
-  const userName = user?.name; 
-  const pathToProfilePicture = user?.avatar?.url; 
-  
+
+  const userName = user?.name;
+  const pathToProfilePicture = user?.avatar?.url;
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [isNewGroup, setIsNewGroup] = useState(false);
-  const {isSearch} = useSelector(state=>state.misc)
-  
+  const { isSearch } = useSelector((state) => state.misc);
+
   const navigateToGroup = () => navigate("/groups");
   const navigatetoHome = () => navigate("/");
 

@@ -20,7 +20,7 @@ const AppLayout = () => (WrappedComponent) => {
     const { user } = useSelector((state) => state.auth);
     
     const socket = getSocket();
-    console.log(socket.data)
+    console.log(socket.id)
     const {isLoading, data, isError, error, refetch} = useMyChatsQuery("")
     
     
@@ -38,7 +38,7 @@ const AppLayout = () => (WrappedComponent) => {
         <Title />
         <Header />
         {
-          isLoading ? (<Skeleton/>):(
+          isLoading ? (<Skeleton>Loading...</Skeleton>):(
             <Drawer open={isMobile} onClose={handleMobileClose}>
               <ChatList 
               w="70vw"

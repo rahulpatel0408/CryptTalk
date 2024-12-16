@@ -1,6 +1,4 @@
 import express from "express";
-import userRoute from "./routes/user.js";
-import chatRoute from "./routes/chat.js";
 import { connectDB } from "./utils/features.js";
 import { configDotenv } from "dotenv";
 import { errorMiddleware } from "./middlewares/error.js";
@@ -15,6 +13,9 @@ import cors from "cors";
 import {v2 as cloudinary} from "cloudinary";
 import { corseOption } from "./constants/config.js";
 import { socketAuthenticator } from "./middlewares/auth.js";
+
+import userRoute from "./routes/user.js";
+import chatRoute from "./routes/chat.js";
 
 configDotenv({
   path: "./.env",

@@ -39,7 +39,7 @@ const leaveGroupValidator = () => [
 ];
 
 const sendAttachmentsValidator = () =>[
-    body("id", "Please enter chatId").notEmpty(),
+    body("chatId", "Please enter chatId").notEmpty(),
 ];
 
 const chatIdValidator = () =>[
