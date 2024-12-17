@@ -20,7 +20,6 @@ const AppLayout = () => (WrappedComponent) => {
     const { user } = useSelector((state) => state.auth);
     
     const socket = getSocket();
-    console.log(socket.id)
     const {isLoading, data, isError, error, refetch} = useMyChatsQuery("")
     
     

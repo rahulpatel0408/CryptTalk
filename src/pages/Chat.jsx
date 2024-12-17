@@ -61,18 +61,18 @@ const Chat = ({ chatId, user }) => {
     setFileMenuAncho(e.currentTarget);
   };
 
+  
   const submitHandler = (e) => {
     e.preventDefault();
     if (!message.trim()) return;
     socket.emit(NEW_MESSAGE, { chatId, members, message });
-    // console.log({ chatId, members, message })
+    console.log({ chatId, members, message })
     setMessage("");
   };
   
-  
   const newMessageHandler = useCallback((data) => {
     setMessages((prev) => [...prev, data.message]);
-    // console.log(data)
+    console.log(data)
   }, []);
 
   const eventsHandler = { [NEW_MESSAGE]: newMessageHandler };
