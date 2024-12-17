@@ -1,6 +1,6 @@
 import {
   ALERT,
-  NEW_ATTACHMENT,
+  NEW_MESSAGE,
   NEW_MESSAGE_ALERT,
   REFETCH_CHATS,
 } from "../constants/events.js";
@@ -8,7 +8,7 @@ import { errorMiddleware, TryCatch } from "../middlewares/error.js";
 import { ErrorHandler } from "../utils/utility.js";
 import { Chat } from "./../models/chat.js";
 import { User } from "../models/user.js";
-import { deleteFilesFromCloudinary, emitEvent } from "../utils/features.js";
+import { deleteFilesFromCloudinary, emitEvent, uploadFilesToCloudinary } from "../utils/features.js";
 import { get } from "mongoose";
 import { Message } from "../models/message.js";
 
@@ -224,7 +224,7 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 
   if (files.length > 5) return next(new ErrorHandler("files can not be more than 5", 400));
 
-  const attachments = [];
+  const attachments = await uploadFilesToCloudinary(files);
   const messageForDB = {
     content: "",
     attachments,
@@ -242,7 +242,7 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 
   const message = await Message.create(messageForDB);
 
-  emitEvent(req, NEW_ATTACHMENT, chat.members, {
+  emitEvent(req, NEW_MESSAGE, chat.members, {
     message: messageForRealTime,
     chatId,
   });

@@ -16,12 +16,15 @@ import FileMenu from "../components/dailogs/FileMenu";
 import { sampleMessage } from "../components/constants/SampleData2";
 import MessageComponent from "../components/shared/MessageComponent";
 import { getSocket } from "../socket";
-import { NEW_MESSAGE } from "../components/constants/events";
+import { NEW_MESSAGE, STOP_TYPING } from "../components/constants/events";
 import { useChatDetailsQuery, useGetMessagesQuery } from "../redux/api/api";
 import { useErrors, useSocketEvents } from "../hooks/hooks";
 import { useInfiniteScrollTop } from "6pp";
 import { useDispatch } from "react-redux";
 import { setIsFileMenu } from "../redux/reducers/misc";
+import { removeNewMessagesAlert } from "../redux/reducers/chat";
+import { START_TYPING } from "../../server/constants/events";
+import { TypingLoader } from "../components/layout/Loaders";
 
 const Chat = ({ chatId, user }) => {
   const containerRef = useRef(null);
@@ -32,6 +35,10 @@ const Chat = ({ chatId, user }) => {
   const [messages, setMessages] = useState([]);
   const [page, setPage] = useState(1);
   const [fileMenuAnchor, setFileMenuAncho] = useState(null);
+
+  const [IamTyping, setIamTyping] = useState(false);
+  const [userTyping, setUserTyping] = useState(false);
+  const typingTimeout = useRef(null);
 
   const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId });
 
@@ -56,6 +63,21 @@ const Chat = ({ chatId, user }) => {
   // console.log(chatDetails)
   const members = chatDetails?.data?.chat?.members;
 
+  const messageOnChange = (e) => {
+    setMessage(e.target.value);
+    if (!IamTyping) {
+      socket.emit(START_TYPING, { members, chatId });
+      setIamTyping(true);
+    }
+
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+
+    typingTimeout.current = setTimeout(() => {
+      socket.emit(STOP_TYPING, { members, chatId });
+      setIamTyping(false);
+    }, [2000]);
+  };
+
   const handleFileOpen = (e) => {
     dispatch(setIsFileMenu(true));
     setFileMenuAncho(e.currentTarget);
@@ -68,14 +90,49 @@ const Chat = ({ chatId, user }) => {
     // console.log({ chatId, members, message })
     setMessage("");
   };
-  
-  
-  const newMessageHandler = useCallback((data) => {
-    setMessages((prev) => [...prev, data.message]);
-    // console.log(data)
-  }, []);
 
-  const eventsHandler = { [NEW_MESSAGE]: newMessageHandler };
+  useEffect(() => {
+    dispatch(removeNewMessagesAlert(chatId));
+    return () => {
+      setMessages([]);
+      setMessage("");
+      setOldMessages([]);
+      setPage(1);
+    };
+  }, [chatId]);
+
+  const newMessageHandler = useCallback(
+    (data) => {
+      if (data.chatId !== chatId) return;
+      setMessages((prev) => [...prev, data.message]);
+      // console.log(data)
+    },
+    [chatId]
+  );
+
+  const startTypingListener = useCallback(
+    (data) => {
+      if (data.chatId !== chatId) return;
+      console.log("typing", data);
+      setUserTyping(true);
+    },
+    [chatId]
+  );
+
+  const stopTypingListener = useCallback(
+    (data) => {
+      if (data.chatId !== chatId) return;
+      console.log("stop typing", data);
+      setUserTyping(false);
+    },
+    [chatId]
+  );
+
+  const eventsHandler = {
+    [NEW_MESSAGE]: newMessageHandler,
+    [START_TYPING]: startTypingListener,
+    [STOP_TYPING]: stopTypingListener,
+  };
   useSocketEvents(socket, eventsHandler);
 
   useErrors(errors);
@@ -101,6 +158,11 @@ const Chat = ({ chatId, user }) => {
         {allMessages.map((i) => (
           <MessageComponent key={i._id} message={i} user={user} />
         ))}
+
+        {userTyping && <TypingLoader />}
+
+        <div />
+
       </Stack>
       <form
         style={{
@@ -126,7 +188,7 @@ const Chat = ({ chatId, user }) => {
           <InputBox
             placeholder="Type Message Here...."
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={messageOnChange}
             sx={{
               width: "100%",
               height: "100%",
@@ -150,7 +212,7 @@ const Chat = ({ chatId, user }) => {
           </IconButton>
         </Stack>
       </form>
-      <FileMenu anchorE1={fileMenuAnchor} chatId={chatId}/>
+      <FileMenu anchorE1={fileMenuAnchor} chatId={chatId} />
     </Fragment>
   );
 };
