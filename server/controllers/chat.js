@@ -257,6 +257,7 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 });
 
 const getChatDetails = TryCatch(async (req, res, next) => {
+  
   if (req.query.populate === "true") {
     const chat = await Chat.findById(req.params.id)
       .populate("members", "name avatar")
@@ -358,6 +359,10 @@ const getMessages = TryCatch(async (req, res, next) => {
   const { page = 1 } = req.query;
   const resultPerPage = 20;
   const skip = (page - 1) * resultPerPage;
+  const chat = await Chat.findById(chatId);
+  if(!chat) return next(new ErrorHandler("Chat not found!", 404));
+  if(!chat.members.includes(req.user.toString()))
+    return next( new ErrorHandler("Not authorized to access this chat!", 403));
   const [messages, totalMessagesCount] = await Promise.all([
     Message.find({ chat: chatId })
       .sort({ createdAt: -1 })

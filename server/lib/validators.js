@@ -29,9 +29,9 @@ const addMembersValidator = () => [
 
 const removeMembersValidator = () => [
     body("chatId", "Please enter chatId").notEmpty(),
-    body("members")
-    .notEmpty().withMessage("Please enter members")
-    .isArray({min:1, max:97}).withMessage("Group size must be between 3-100")
+    body("userId")
+    .notEmpty().withMessage("Please enter member")
+    
 ];
 
 const leaveGroupValidator = () => [

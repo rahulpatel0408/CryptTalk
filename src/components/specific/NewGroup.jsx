@@ -1,10 +1,16 @@
 import { useInputValidation } from '6pp';
-import { Button, Box, MenuItem, Divider, Stack, Dialog, DialogTitle, TextField, Typography, Avatar, Grid2 } from '@mui/material';
+import { Button, Box, MenuItem, Divider, Stack, Dialog, DialogTitle, TextField, Typography, Avatar, Grid2, Skeleton } from '@mui/material';
 import React, { useState } from 'react';
 import { sampleUsers } from '../constants/SampleData';
+import { useDispatch, useSelector } from 'react-redux';
+import { useAvailableFriendsQuery, useNewGroupMutation } from '../../redux/api/api';
+import { useAsyncMutation, useErrors } from '../../hooks/hooks';
+import toast from 'react-hot-toast';
 
 const NewGroup = ({ handleCloseNewGroup }) => {
-    
+    const dispatch = useDispatch();
+    const { isError, isLoading, error, data } = useAvailableFriendsQuery();
+
     const [selectedMembers, setSelectedMembers] = useState([]);
     const selectMemberHandler = ({ _id }) => {
         setSelectedMembers((prev) =>
@@ -12,14 +18,31 @@ const NewGroup = ({ handleCloseNewGroup }) => {
         );
     };
 
-    const submitHandler = () =>{
-        console.log(selectedMembers, groupName)
+    const submitHandler = () => {
+        
+        if (selectedMembers.length < 2) return toast.error("Please select atleast 3 members!");
+        if (!groupName.value) return toast.error("Enter Group name!");
+        newGroup("Creating New Group",{name:groupName.value, members: selectedMembers});
+
+        handleCloseNewGroup();
+        
     }
-    
-    const [groupName, setGroupName] = useState('');
-    const groupNameChange=(e)=>{
-        setGroupName(e.target.value)
-    }
+    const [newGroup, isLoadingNewGroup] = useAsyncMutation(useNewGroupMutation);
+
+    // const [groupName, setGroupName] = useState('');
+    const groupName = useInputValidation("");
+
+    // const groupNameChange = (e) => {
+    //     setGroupName(e.target.value)
+    // }
+
+    const errors = [
+        {
+            isError,
+            error,
+        },
+    ];
+    useErrors(errors);
 
     return (
         <Dialog
@@ -28,7 +51,7 @@ const NewGroup = ({ handleCloseNewGroup }) => {
             sx={{
                 '& .MuiPaper-root': {
                     borderRadius: '20px',
-                    width:"auto",
+                    width: "auto",
                     overflowY: 'hidden',
                     scrollbarWidth: 'none',
                     '&::-webkit-scrollbar': {
@@ -38,9 +61,9 @@ const NewGroup = ({ handleCloseNewGroup }) => {
             }}
         >
             <Stack
-            sx={{
-                width: 'auto',
-            }}>
+                sx={{
+                    width: 'auto',
+                }}>
                 <Box sx={{
                     position: 'sticky',
                     top: 0,
@@ -51,7 +74,8 @@ const NewGroup = ({ handleCloseNewGroup }) => {
                         <strong>New Group</strong>
                     </DialogTitle>
                     <TextField
-                    onChange={groupNameChange}
+                        onChange={groupName.changeHandler}
+                        value={groupName.value}
                         placeholder='Group Name'
                         sx={{
 
@@ -75,28 +99,29 @@ const NewGroup = ({ handleCloseNewGroup }) => {
                 <Grid2
                     sx={{
                         alignItems: 'center',
-                    justifyContent: 'center',
+                        justifyContent: 'center',
                     }}
                     container spacing={1}
                     columnSpacing={{
                         xs: 1
 
                     }}>
-                    {sampleUsers.length > 0 ? (
-                        sampleUsers.map(({ avatar, name, _id }) => (
-                            <Grid2  xs={6} key={_id}>
-                                <GroupItem
-                                    avatar={avatar}
-                                    _id={_id}
-                                    name={name}
-                                    handler={selectMemberHandler}
-                                    isUserSelected={selectedMembers.includes(_id)}
-                                />
-                            </Grid2>
-                        ))
-                    ) : (
-                        <Typography textAlign={"center"}>No Friends</Typography>
-                    )}
+                    {isLoading ? <Skeleton /> :
+                        data?.friends?.length > 0 ? (
+                            data?.friends?.map(({ avatar, name, _id }) => (
+                                <Grid2 xs={6} key={_id}>
+                                    <GroupItem
+                                        avatar={avatar}
+                                        _id={_id}
+                                        name={name}
+                                        handler={selectMemberHandler}
+                                        isUserSelected={selectedMembers.includes(_id)}
+                                    />
+                                </Grid2>
+                            ))
+                        ) : (
+                            <Typography textAlign={"center"}>No Friends</Typography>
+                        )}
                 </Grid2>
 
                 <Box sx={{
@@ -107,11 +132,12 @@ const NewGroup = ({ handleCloseNewGroup }) => {
                     padding: '10px',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    display: 'flex'
+                    display: 'flex',
+                    gap:"20px"
+    
                 }}>
-                    <Button sx={{
-
-                    }} variant="contained" onClick={submitHandler}>Create</Button>
+                    <Button variant="contained" disabled={isLoadingNewGroup} onClick={submitHandler}>Create</Button>
+                    <Button variant="contained" color="error" onClick={handleCloseNewGroup}>Cancel</Button>
                 </Box>
 
             </Stack>
@@ -125,7 +151,7 @@ const GroupItem = ({ avatar, name, _id, handler, isUserSelected }) => {
             onClick={() => handler({ _id })}
             disableRipple
             sx={{
-                width:'250px',
+                width: '250px',
                 display: 'flex',
                 alignItems: 'center',
                 marginTop: '10px',

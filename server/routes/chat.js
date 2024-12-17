@@ -35,5 +35,5 @@ app.get("/message/:id", chatIdValidator(), validateHandler, getMessages);
 app.route("/:id")
   .get(getChatDetails, chatIdValidator(), validateHandler)
   .put(renameGroup, renameValidator(), validateHandler)
-  .delete(getChatDetails, chatIdValidator(), deleteChat);
+  .delete(deleteChat, chatIdValidator(), validateHandler);
 export default app;

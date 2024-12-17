@@ -39,6 +39,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/chat/:chatId" element={<Chat />} />
             <Route path="/groups" element={<Groups />} />
+            <Route path="/groups:chatId" element={<Groups />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
           <Route

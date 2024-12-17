@@ -16,7 +16,7 @@ import FileMenu from "../components/dailogs/FileMenu";
 import { sampleMessage } from "../components/constants/SampleData2";
 import MessageComponent from "../components/shared/MessageComponent";
 import { getSocket } from "../socket";
-import { NEW_MESSAGE, STOP_TYPING } from "../components/constants/events";
+import { ALERT, NEW_MESSAGE, STOP_TYPING } from "../components/constants/events";
 import { useChatDetailsQuery, useGetMessagesQuery } from "../redux/api/api";
 import { useErrors, useSocketEvents } from "../hooks/hooks";
 import { useInfiniteScrollTop } from "6pp";
@@ -25,11 +25,14 @@ import { setIsFileMenu } from "../redux/reducers/misc";
 import { removeNewMessagesAlert } from "../redux/reducers/chat";
 import { START_TYPING } from "../../server/constants/events";
 import { TypingLoader } from "../components/layout/Loaders";
+import { useNavigate } from "react-router-dom";
 
 const Chat = ({ chatId, user }) => {
   const containerRef = useRef(null);
+  const bottomRef = useRef(null);
   const socket = getSocket();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -54,7 +57,7 @@ const Chat = ({ chatId, user }) => {
     setPage,
     oldMessagesChunk.data?.message
   );
-
+  
   const errors = [
     { isError: chatDetails.isError, error: chatDetails.error },
     { isError: oldMessagesChunk.isError, error: oldMessagesChunk.error },
@@ -100,6 +103,18 @@ const Chat = ({ chatId, user }) => {
       setPage(1);
     };
   }, [chatId]);
+
+  useEffect(()=>{
+    if (bottomRef.current){
+      bottomRef.current.scrollIntoView({behavior:"smooth"});
+    }
+  },[messages]);
+
+  useEffect(()=>{  //incase chat is not opening this is the cause
+    console.log(chatDetails.data)
+    if(!chatDetails.data?.chat) return navigate("/");
+  },[chatDetails.data]);
+
 
   const newMessageHandler = useCallback(
     (data) => {
@@ -159,9 +174,9 @@ const Chat = ({ chatId, user }) => {
           <MessageComponent key={i._id} message={i} user={user} />
         ))}
 
-        {userTyping && <TypingLoader />}
+        {userTyping && <TypingLoader sender = {message.sender}/>}
 
-        <div />
+        <div ref={bottomRef} />
 
       </Stack>
       <form

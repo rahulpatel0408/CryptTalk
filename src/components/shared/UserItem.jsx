@@ -1,17 +1,20 @@
 import { Avatar, IconButton, ListItem, Stack, Typography } from "@mui/material";
 import React, { memo } from "react";
-import {Add as AddIcon} from "@mui/icons-material"
+import { Add as AddIcon, PersonAddAlt1Rounded as PersonAddAlt1RoundedIcon, PersonRemoveAlt1Rounded as PersonRemoveAlt1RoundedIcon } from "@mui/icons-material"
 import { tranformImage } from "../../lib/features";
-const UserItem = ({ user, handler, handlerIsLoading,isAdded=false, styling={},}) => {
+const UserItem = ({ user, handler, handlerIsLoading, isAdded = false , styling = {}, }) => {
   const { name, _id, avatar } = user;
+
   return (
-    <ListItem>
+    <ListItem 
+    >
       <Stack
         direction={"row"}
         alignItems={"center"}
         spacing={"1rem"}
         width={"100%"}
         {...styling}
+        
       >
         <Avatar src={avatar} />
         <Typography
@@ -22,24 +25,44 @@ const UserItem = ({ user, handler, handlerIsLoading,isAdded=false, styling={},})
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            width:"100%"
+            width: "100%"
           }}
         >
           {name}
         </Typography>
         <IconButton
-        size="small"
-        sx={{
-            bgcolor:"primary.maoin",
-            color:"white",
-            "&:hover":{
-                bgcolor:"primary.dark",
+          size="small"
+          sx={{
+            bgcolor: "transparent",
+            color: "white",
+            "&:hover": {
+              bgcolor: "rgb(221, 226, 230)",
             },
-        }}
-        onClick={() => handler(_id)} disabled={handlerIsLoading}>
-          <AddIcon sx={{
-            color:"blue"
-          }}/>
+          }}
+          onClick={() => handler(_id)} disabled={handlerIsLoading}>
+          {
+            isAdded ? <PersonRemoveAlt1RoundedIcon 
+            sx={{
+              color: "#d32f2f", 
+              fontSize: 30, 
+              transition: "all 0.3s ease", 
+              "&:hover": {
+                backgroundColor: "transparent", 
+                borderRadius: "50%", 
+                cursor: "pointer", 
+              },
+            }}/> : <PersonAddAlt1RoundedIcon 
+            sx={{
+              color: "green", 
+              fontSize: 30, 
+              transition: "all 0.3s ease", 
+              "&:hover": {
+                backgroundColor: "transparent", 
+                borderRadius: "50%", 
+                cursor: "pointer", 
+              },
+            }}/>
+          }
         </IconButton>
       </Stack>
     </ListItem>

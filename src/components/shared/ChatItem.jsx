@@ -2,6 +2,7 @@ import React, { memo } from "react";
 import { Link } from "../styles/StyledComponents";
 import { Box, Divider, Stack, Typography } from "@mui/material";
 import AvatarCard from "./AvatarCard";
+import { motion } from "framer-motion";
 
 const ChatItem = ({
   avatar = [],
@@ -22,73 +23,88 @@ const ChatItem = ({
       to={`/chat/${_id}`}
       onContextMenu={(e) => handleDeleteChat(e, _id, groupChat)}
     >
-      <Box
-        sx={{
-          alignItems: "center",
-          justifyContent: 'center',
-          display: "flex",
-          alignItems: "center",
-          backgroundColor: "#ffffff",
-          gap: "1rem",
-          position: "relative",
-          "&:hover": {
-            backgroundColor: "#ffffff",
-          }
-        }}>
+      <motion.div
+        initial={{ opacity: 0, y: "-100%" }}
+        whileInView={{opacity:1, y:0}}
+        transition={{
+          duration: 0.3,
+          delay: index * 0.1, 
+          ease: "easeOut",
+        }}
+      >
         <Box
           sx={{
-            // alignItems: "center",
-            // justifyContent: 'center',
+            alignItems: "center",
+            justifyContent: "center",
             display: "flex",
             alignItems: "center",
-            padding: "1rem",
-            margin: '5px',
-            width:"100%",
-            backgroundColor: sameSender ? "#555555" : "#ffffff",
-            color: sameSender ? "white" : "#333333",
+            backgroundColor: "#ffffff",
             gap: "1rem",
             position: "relative",
-            borderRadius: '25px',
-            transition: "transform 0.3s ease-in-out",
             "&:hover": {
-              transform: 'scale(1.02)',
-              backgroundColor: sameSender ? "#333333" : "#efefef",
+              backgroundColor: "#ffffff",
             },
           }}
         >
-          <Box sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: 'center',
-          }}>
-            
-            <AvatarCard avatar={avatar} />
-            <Stack>
-              <Typography sx={{marginRight:"2rem",
-                fontSize:"18px",
-              }}>{name}</Typography>
-              {newMessageAlert && (
-                <Typography>{newMessageAlert.count} New Message</Typography>
-              )}
-            </Stack>
-          </Box>
-          {isOnline && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              padding: "1rem",
+              margin: "5px",
+              width: "100%",
+              backgroundColor: sameSender ? "#555555" : "#ffffff",
+              color: sameSender ? "white" : "#333333",
+              gap: "1rem",
+              position: "relative",
+              borderRadius: "25px",
+              transition: "transform 0.3s ease-in-out",
+              "&:hover": {
+                transform: "scale(1.02)",
+                backgroundColor: sameSender ? "#333333" : "#efefef",
+              },
+            }}
+          >
             <Box
               sx={{
-                position: "absolute",
-                width: "10px",
-                height: "10px",
-                borderRadius: "50%",
-                backgroundColor: "green",
-                top: "50%",
-                right: "1rem",
-                transform: "translateY(-50%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
-            />
-          )}
+            >
+              <AvatarCard avatar={avatar} />
+              <Stack>
+                <Typography
+                  sx={{
+                    marginRight: "2rem",
+                    fontSize: "18px",
+                  }}
+                >
+                  {name}
+                </Typography>
+                {newMessageAlert && (
+                  <Typography>{newMessageAlert.count} New Message</Typography>
+                )}
+              </Stack>
+            </Box>
+            {isOnline && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: "green",
+                  top: "50%",
+                  right: "1rem",
+                  transform: "translateY(-50%)",
+                }}
+              />
+            )}
+          </Box>
         </Box>
-      </Box>
-      <Divider  variant="middle" flexItem></Divider>
+        <Divider variant="middle" flexItem></Divider>
+      </motion.div>
     </Link>
   );
 };
