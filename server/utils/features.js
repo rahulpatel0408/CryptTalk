@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { v4 as uuid } from "uuid";
 import { v2 as cloudinary } from "cloudinary";
-import { getBase64 } from "../lib/helper.js";
+import { getBase64, getSockets } from "../lib/helper.js";
 const cookieOptions = {
   maxAge: 15 * 24 * 60 * 60 * 1000, //15days
   sameSite: "none",
@@ -38,7 +38,6 @@ const emitEvent = (req, event, users, data) => {
   const io = req.app.get("io");
   const usersSocket = getSockets(users);
   io.to(usersSocket).emit(event, data);
-  console.log("emitting: ", event)
 };
 
 const uploadFilesToCloudinary = async (files = []) => {

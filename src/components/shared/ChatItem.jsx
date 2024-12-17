@@ -37,8 +37,8 @@ const ChatItem = ({
         }}>
         <Box
           sx={{
-            alignItems: "center",
-            justifyContent: 'center',
+            // alignItems: "center",
+            // justifyContent: 'center',
             display: "flex",
             alignItems: "center",
             padding: "1rem",
@@ -64,7 +64,9 @@ const ChatItem = ({
             
             <AvatarCard avatar={avatar} />
             <Stack>
-              <Typography sx={{marginRight:"2rem"}}>{name}</Typography>
+              <Typography sx={{marginRight:"2rem",
+                fontSize:"18px",
+              }}>{name}</Typography>
               {newMessageAlert && (
                 <Typography>{newMessageAlert.count} New Message</Typography>
               )}

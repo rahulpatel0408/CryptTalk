@@ -9,6 +9,7 @@ import {
   Avatar,
   IconButton,
   Tooltip,
+  Badge,
 } from "@mui/material";
 import React, { lazy, Suspense, useState } from "react";
 import logo_icon from "./../../assets/LoginSignup/logo.png";
@@ -30,6 +31,7 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { userNotExists } from "../../redux/reducers/auth";
 import { setIsMobile, setIsSearch } from "../../redux/reducers/misc";
+import { resetNotificationCount } from "../../redux/reducers/chat";
 const Search = lazy(() => import("../specific/Search"));
 const Header = () => {
   const { user } = useSelector((state) => state.auth);
@@ -42,7 +44,7 @@ const Header = () => {
 
   const [isNewGroup, setIsNewGroup] = useState(false);
   const { isSearch } = useSelector((state) => state.misc);
-
+  const { notificationCount } = useSelector((state) => state.chat);
   const navigateToGroup = () => navigate("/groups");
   const navigatetoHome = () => navigate("/");
 
@@ -63,6 +65,7 @@ const Header = () => {
 
   const handleNotificationMenuOpen = (event) => {
     setAnchorElNotification(event.currentTarget);
+    dispatch(resetNotificationCount());
   };
 
   const handleNotificationMenuClose = () => {
@@ -164,6 +167,7 @@ const Header = () => {
               title={"Notification"}
               icon={<NotificationsActiveRoundedIcon />}
               onClick={handleNotificationMenuOpen}
+              value={notificationCount}
             />
             <IconBtn
               title={"Profile"}
@@ -284,7 +288,7 @@ const MenuItemCustom = ({ label, onClick }) => {
   );
 };
 
-const IconBtn = ({ title, icon, onClick }) => {
+const IconBtn = ({ title, icon, onClick, value }) => {
   return (
     <Tooltip title={title}>
       <IconButton
@@ -296,7 +300,13 @@ const IconBtn = ({ title, icon, onClick }) => {
         size="large"
         onClick={onClick}
       >
-        {icon}
+        {value ? (
+          <Badge badgeContent={value} color="error">
+            {icon}
+          </Badge>
+        ) : (
+          icon
+        )}
       </IconButton>
     </Tooltip>
   );
