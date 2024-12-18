@@ -15,6 +15,8 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
   };
@@ -26,6 +28,9 @@ const Login = () => {
 
   const handleButtonClick = async (e) => {
     e.preventDefault();
+
+    const toastId = toast.loading("Logging In.....");
+    setIsLoading(true);
 
     const config = {
       withCredentials: true,
@@ -42,10 +47,16 @@ const Login = () => {
         },
         config
       );
-      dispatch(userExists(true));
-      toast.success(data.message);
+      dispatch(userExists(data.user));
+      toast.success(data.message,{
+        id: toastId
+      });
     } catch (error) {
-      toast.error(error?.response?.data?.message || "something went wrong");
+      toast.error(error?.response?.data?.message || "something went wrong",{
+        id: toastId
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,7 +96,11 @@ const Login = () => {
             </div>
           </div>
           <div className="submit-container">
-            <button className="submit" onClick={handleButtonClick}>
+            <button
+              className="submit"
+              onClick={handleButtonClick}
+              disabled={isLoading}
+            >
               Login
             </button>
           </div>

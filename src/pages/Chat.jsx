@@ -13,10 +13,15 @@ import {
 } from "@mui/icons-material";
 import { InputBox } from "../components/styles/StyledComponents";
 import FileMenu from "../components/dailogs/FileMenu";
-import { sampleMessage } from "../components/constants/SampleData2";
 import MessageComponent from "../components/shared/MessageComponent";
 import { getSocket } from "../socket";
-import { ALERT, NEW_MESSAGE, STOP_TYPING } from "../components/constants/events";
+import {
+  ALERT,
+  CHAT_JOINED,
+  CHAT_LEAVED,
+  NEW_MESSAGE,
+  STOP_TYPING,
+} from "../components/constants/events";
 import { useChatDetailsQuery, useGetMessagesQuery } from "../redux/api/api";
 import { useErrors, useSocketEvents } from "../hooks/hooks";
 import { useInfiniteScrollTop } from "6pp";
@@ -57,7 +62,7 @@ const Chat = ({ chatId, user }) => {
     setPage,
     oldMessagesChunk.data?.message
   );
-  
+
   const errors = [
     { isError: chatDetails.isError, error: chatDetails.error },
     { isError: oldMessagesChunk.isError, error: oldMessagesChunk.error },
@@ -90,31 +95,33 @@ const Chat = ({ chatId, user }) => {
     e.preventDefault();
     if (!message.trim()) return;
     socket.emit(NEW_MESSAGE, { chatId, members, message });
-    console.log({ chatId, members, message })
+    console.log({ chatId, members, message });
     setMessage("");
   };
 
   useEffect(() => {
+    socket.emit(CHAT_JOINED, { userId: user._id, members });
     dispatch(removeNewMessagesAlert(chatId));
     return () => {
       setMessages([]);
       setMessage("");
       setOldMessages([]);
       setPage(1);
+      socket.emit(CHAT_LEAVED, { userId: user._id, members });
     };
   }, [chatId]);
 
-  useEffect(()=>{
-    if (bottomRef.current){
-      bottomRef.current.scrollIntoView({behavior:"smooth"});
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  },[messages]);
+  }, [messages]);
 
-  useEffect(()=>{  //incase chat is not opening this is the cause
-    console.log(chatDetails.data)
-    if(!chatDetails.data?.chat) return navigate("/");
-  },[chatDetails.data]);
-
+  useEffect(() => {
+    //incase chat is not opening this is the cause
+    console.log(chatDetails.isError);
+    if (chatDetails.isError) return navigate("/");
+  }, [chatDetails.isError]);
 
   const newMessageHandler = useCallback(
     (data) => {
@@ -143,7 +150,25 @@ const Chat = ({ chatId, user }) => {
     [chatId]
   );
 
+  const alertListener = useCallback(
+    (data) => {
+      if (data.chatId !== chatId) return;
+      const messageForAlert = {
+        content: data.message,
+        sender: {
+          _id: "ljsklfdgvsdjklfjv",
+          name: "Admin",
+        },
+        chat: chatId,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, messageForAlert]);
+    },
+    [chatId]
+  );
+
   const eventsHandler = {
+    [ALERT]: alertListener,
     [NEW_MESSAGE]: newMessageHandler,
     [START_TYPING]: startTypingListener,
     [STOP_TYPING]: stopTypingListener,
@@ -174,10 +199,9 @@ const Chat = ({ chatId, user }) => {
           <MessageComponent key={i._id} message={i} user={user} />
         ))}
 
-        {userTyping && <TypingLoader sender = {message.sender}/>}
+        {userTyping && <TypingLoader sender={message.sender} />}
 
         <div ref={bottomRef} />
-
       </Stack>
       <form
         style={{

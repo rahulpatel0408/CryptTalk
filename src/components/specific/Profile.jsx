@@ -45,7 +45,7 @@ const Profile = () => {
           alignItems={"center"}
         >
           <Avatar
-            src={tranformImage(user?.avatar?.url)}
+            src={user?.avatar?.url}
             sx={{
               width: 200,
               height: 200,

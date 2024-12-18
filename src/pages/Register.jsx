@@ -21,6 +21,8 @@ const Register = () => {
   const [bio, setBio] = useState("");
   const [privacy, setPrivacy] = useState(true);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const avatar = useFileHandler("single");
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -39,10 +41,12 @@ const Register = () => {
 
   const handleButtonClick = async (e) => {
     e.preventDefault();
+    const toastId = toast.loading("Registering please wait for a while.....");
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("avatar", avatar.file);
     formData.append("name", name);
-    formData.append("bio",bio);
+    formData.append("bio", bio);
     formData.append("username", username);
     formData.append("password", password);
 
@@ -58,15 +62,20 @@ const Register = () => {
         formData,
         config
       );
-      dispatch(userExists(true));
-      toast.success(data.message)
+      dispatch(userExists(data.user));
+      toast.success(data.message, {
+        id: toastId,
+      });
     } catch (error) {
-      console.log(avatar.file)
+      console.log(avatar.file);
       // console.log("FormData:", Object.fromEntries(formData.entries()));
       console.error("Error:", error);
-      toast.error(error?.response?.data?.message || "something went wrong");
+      toast.error(error?.response?.data?.message || "something went wrong", {
+        id: toastId,
+      });
+    } finally {
+      setIsLoading(false);
     }
-   
   };
 
   return (
@@ -109,7 +118,7 @@ const Register = () => {
             </IconButton>
           </Stack>
           <div className="inputs">
-          <div className="input">
+            <div className="input">
               <input
                 type="text"
                 placeholder="Name"
@@ -118,11 +127,7 @@ const Register = () => {
               <img src={user_icon} alt="" />
             </div>
             <div className="input">
-              <input
-                type="text"
-                placeholder="Bio"
-                onChange={handleBioChange}
-              />
+              <input type="text" placeholder="Bio" onChange={handleBioChange} />
               <img src={email_icon} alt="" />
             </div>
             <div className="input">
@@ -133,7 +138,7 @@ const Register = () => {
               />
               <img src={user_icon} alt="" />
             </div>
-            
+
             <div className="input">
               <input
                 type={privacy ? "password" : "text"}
@@ -149,7 +154,11 @@ const Register = () => {
             </div>
           </div>
           <div className="submit-container">
-            <button className="submit" onClick={handleButtonClick}>
+            <button
+              className="submit"
+              onClick={handleButtonClick}
+              disabled={isLoading}
+            >
               Register
             </button>
           </div>

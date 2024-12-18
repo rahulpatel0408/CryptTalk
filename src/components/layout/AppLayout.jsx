@@ -1,19 +1,29 @@
-import React, { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import Header from "./Header";
 import Title from "../shared/Title";
 import { Grid2, Box, Divider, Skeleton, Drawer } from "@mui/material";
 import ChatList from "../specific/ChatList";
-import { sampleChats } from "../constants/SampleData2";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMyChatsQuery } from "../../redux/api/api";
 import { useDispatch, useSelector } from "react-redux";
-import { setIsDeleteMenu, setIsMobile, setSelectedDeleteChat } from "../../redux/reducers/misc";
+import {
+  setIsDeleteMenu,
+  setIsMobile,
+  setSelectedDeleteChat,
+} from "../../redux/reducers/misc";
 import { useErrors, useSocketEvents } from "../../hooks/hooks";
 import { getSocket } from "../../socket";
 import {
   NEW_MESSAGE,
   NEW_MESSAGE_ALERT,
   NEW_REQUEST,
+  ONLINE_USERS,
   REFETCH_CHATS,
 } from "../constants/events";
 import {
@@ -30,14 +40,17 @@ const AppLayout = () => (WrappedComponent) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const chatId = params.chatId;
+
+    const [onlineUsers, setOlineUsers] = useState([]);
+
     const { isMobile } = useSelector((state) => state.misc);
     const { user } = useSelector((state) => state.auth);
     const { newMessageAlert } = useSelector((state) => state.chat);
-    const {isDeleteMenu} = useSelector((state)=>state.misc)
+    const { isDeleteMenu } = useSelector((state) => state.misc);
     // console.log("newMessageAlert", newMessageAlert);
     const socket = getSocket();
     console.log(socket.id);
-    const { isLoading, data, isError, error, refetch  } = useMyChatsQuery("");
+    const { isLoading, data, isError, error, refetch } = useMyChatsQuery("");
 
     useErrors([{ isError, error }]);
 
@@ -46,8 +59,8 @@ const AppLayout = () => (WrappedComponent) => {
     }, [newMessageAlert]);
 
     const handleDeleteChat = (e, _id, groupChat) => {
-      dispatch(setIsDeleteMenu(true))
-      dispatch(setSelectedDeleteChat({chatId, groupChat}))
+      dispatch(setIsDeleteMenu(true));
+      dispatch(setSelectedDeleteChat({ chatId, groupChat }));
       deleteMenuAnchor.current = e.currentTarget;
       console.log("delete chat", _id, groupChat);
     };
@@ -68,15 +81,23 @@ const AppLayout = () => (WrappedComponent) => {
       dispatch(incrementNotificationCount());
     }, [dispatch]);
 
-    const refetchListner = useCallback(()=>{
+    const refetchListner = useCallback(() => {
       refetch();
-      navigate("/")
-    },[refetch, navigate]);
+      navigate("/");
+    }, [refetch, navigate]);
+
+    const onlineUsersListner = useCallback((data) => {
+      //console.log(data)
+      setOlineUsers(data);
+      
+    }, []);
+    //console.log(onlineUsers);
 
     const eventsHandlers = {
       [NEW_MESSAGE_ALERT]: newMessageAlertListner,
       [NEW_REQUEST]: newRequestListner,
-      [REFETCH_CHATS]: refetchListner
+      [REFETCH_CHATS]: refetchListner,
+      [ONLINE_USERS]: onlineUsersListner,
     };
     useSocketEvents(socket, eventsHandlers);
 
@@ -84,7 +105,11 @@ const AppLayout = () => (WrappedComponent) => {
       <>
         <Title />
         <Header />
-        <DeleteChatMenu open={isDeleteMenu} dispatch={dispatch} deleteOptionAnchor={deleteMenuAnchor.current} />
+        <DeleteChatMenu
+          open={isDeleteMenu}
+          dispatch={dispatch}
+          deleteOptionAnchor={deleteMenuAnchor.current}
+        />
         {isLoading ? (
           <Skeleton>Loading...</Skeleton>
         ) : (
@@ -95,6 +120,7 @@ const AppLayout = () => (WrappedComponent) => {
               chatId={chatId}
               handleDeleteChat={handleDeleteChat}
               newMessagesAlert={newMessageAlert}
+              onlineUsers={onlineUsers}
             />
           </Drawer>
         )}
@@ -123,6 +149,7 @@ const AppLayout = () => (WrappedComponent) => {
                   chatId={chatId}
                   handleDeleteChat={handleDeleteChat}
                   newMessagesAlert={newMessageAlert}
+                  onlineUsers={onlineUsers}
                 />
               )}
             </Grid2>

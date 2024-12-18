@@ -8,7 +8,11 @@ import { errorMiddleware, TryCatch } from "../middlewares/error.js";
 import { ErrorHandler } from "../utils/utility.js";
 import { Chat } from "./../models/chat.js";
 import { User } from "../models/user.js";
-import { deleteFilesFromCloudinary, emitEvent, uploadFilesToCloudinary } from "../utils/features.js";
+import {
+  deleteFilesFromCloudinary,
+  emitEvent,
+  uploadFilesToCloudinary,
+} from "../utils/features.js";
 import { get } from "mongoose";
 import { Message } from "../models/message.js";
 
@@ -201,7 +205,10 @@ const leaveGroup = TryCatch(async (req, res, next) => {
     User.findById(req.user, "name"),
     chat.save(),
   ]);
-  emitEvent(req, ALERT, chat.members, `User ${user.name} has left the group`);
+  emitEvent(req, ALERT, chat.members, {
+    chatId,
+    message: `User ${user.name} has left the group`,
+  });
 
   return res.status(200).json({
     success: true,
@@ -222,7 +229,8 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 
   if (files.length < 1) return next(new ErrorHandler("No files attached", 400));
 
-  if (files.length > 5) return next(new ErrorHandler("files can not be more than 5", 400));
+  if (files.length > 5)
+    return next(new ErrorHandler("files can not be more than 5", 400));
 
   const attachments = await uploadFilesToCloudinary(files);
   const messageForDB = {
@@ -246,7 +254,6 @@ const sendAttachments = TryCatch(async (req, res, next) => {
     message: messageForRealTime,
     chatId,
   });
-  
 
   emitEvent(req, NEW_MESSAGE_ALERT, chat.members, { chatId });
 
@@ -257,7 +264,6 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 });
 
 const getChatDetails = TryCatch(async (req, res, next) => {
-  
   if (req.query.populate === "true") {
     const chat = await Chat.findById(req.params.id)
       .populate("members", "name avatar")
@@ -360,9 +366,9 @@ const getMessages = TryCatch(async (req, res, next) => {
   const resultPerPage = 20;
   const skip = (page - 1) * resultPerPage;
   const chat = await Chat.findById(chatId);
-  if(!chat) return next(new ErrorHandler("Chat not found!", 404));
-  if(!chat.members.includes(req.user.toString()))
-    return next( new ErrorHandler("Not authorized to access this chat!", 403));
+  if (!chat) return next(new ErrorHandler("Chat not found!", 404));
+  if (!chat.members.includes(req.user.toString()))
+    return next(new ErrorHandler("Not authorized to access this chat!", 403));
   const [messages, totalMessagesCount] = await Promise.all([
     Message.find({ chat: chatId })
       .sort({ createdAt: -1 })

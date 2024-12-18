@@ -22,8 +22,6 @@ import {
 } from "@mui/icons-material";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import GroupList from "../components/specific/GroupList";
-import { sampleChats } from "../components/constants/SampleData2";
-import { sampleUsers } from "../components/constants/SampleData";
 import UserItem from "../components/shared/UserItem";
 import { useAddGroupMembersMutation, useChatDetailsQuery, useDeleteChatMutation, useMyGroupsQuery, useRemoveGroupMemberMutation, useRenameGroupMutation } from "../redux/api/api";
 import { LayoutLoader } from "../components/layout/Loaders";
@@ -94,12 +92,17 @@ const Groups = () => {
   };
 
   const deleteHandler = () => {
-    console.log('awdwad', chatId)
+    console.log("Deleting group:", chatId);
     deleteGroup("Deleting Group...", chatId)
-    closeConfirmDeleteHandler();
-    navigate("/groups");
-  }
-
+      .then(() => {
+        myGroups.refetch();
+        closeConfirmDeleteHandler();
+        navigate("/groups");
+      })
+      .catch((error) => {
+        console.error("Error deleting group:", error);
+      });
+  };
   const removeMemberHandler = (id) => { 
     console.log({chatId, userId:id})
     removeMember("Removing  Member...", {chatId, userId:id});
