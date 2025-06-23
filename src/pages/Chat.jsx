@@ -1,5 +1,4 @@
-// Modified Chat.jsx with Debug Logs and join-room fix
-
+// ✅ Final working Chat.jsx with persistent key storage and mutual key exchange
 import React, {
   Fragment,
   useCallback,
@@ -41,6 +40,8 @@ import {
   deriveSharedSecret,
   encryptMessage,
   decryptMessage,
+  saveKeyPair,
+  loadKeyPair,
 } from "../utils/crypto";
 
 const Chat = ({ chatId, user }) => {
@@ -61,10 +62,7 @@ const Chat = ({ chatId, user }) => {
 
   const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId });
 
-  const oldMessagesChunk = useGetMessagesQuery({
-    chatId,
-    page,
-  });
+  const oldMessagesChunk = useGetMessagesQuery({ chatId, page });
 
   const { data: oldMessages, setData: setOldMessages } = useInfiniteScrollTop(
     containerRef,
@@ -82,27 +80,43 @@ const Chat = ({ chatId, user }) => {
   const members = chatDetails?.data?.chat?.members;
 
   const [sharedSecret, setSharedSecret] = useState(null);
+  const myKeyPairRef = useRef(null);
+  const publicKeySentRef = useRef(false);
 
   useEffect(() => {
     socket.emit("join-room", { chatId });
+    publicKeySentRef.current = false;
 
-    let myKeyPair;
     const initKeys = async () => {
-      myKeyPair = await generateKeyPair();
-      const publicKeyString = await exportPublicKey(myKeyPair.publicKey);
-      console.log("📤 Sending my public key:", publicKeyString);
-      socket.emit("public-key", { chatId, key: publicKeyString });
+      let keyPair = await loadKeyPair(chatId);
+      if (!keyPair) {
+        keyPair = await generateKeyPair();
+        await saveKeyPair(chatId, keyPair);
+      }
+      myKeyPairRef.current = keyPair;
 
-      socket.on("public-key", async ({ key }) => {
-        console.log("🔑 Received public key from peer:", key);
-        const otherPublicKey = await importPublicKey(key);
-        const secret = await deriveSharedSecret(myKeyPair.privateKey, otherPublicKey);
-        console.log("✅ Shared secret derived");
-        setSharedSecret(secret);
-      });
+      const myPublicKey = await exportPublicKey(keyPair.publicKey);
+      console.log("📤 Sending my public key:", myPublicKey);
+      socket.emit("public-key", { chatId, key: myPublicKey });
     };
 
     initKeys();
+
+    socket.on("public-key", async ({ key }) => {
+      console.log("🔑 Received public key:", key);
+      if (!myKeyPairRef.current) return;
+      const otherPublicKey = await importPublicKey(key);
+      const secret = await deriveSharedSecret(myKeyPairRef.current.privateKey, otherPublicKey);
+      console.log("✅ Shared secret derived");
+      setSharedSecret(secret);
+
+      if (!publicKeySentRef.current) {
+        const myPublicKey = await exportPublicKey(myKeyPairRef.current.publicKey);
+        console.log("📤 Echoing my public key:", myPublicKey);
+        socket.emit("public-key", { chatId, key: myPublicKey });
+        publicKeySentRef.current = true;
+      }
+    });
 
     return () => {
       socket.off("public-key");
@@ -127,9 +141,7 @@ const Chat = ({ chatId, user }) => {
       socket.emit(START_TYPING, { members, chatId });
       setIamTyping(true);
     }
-
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
-
     typingTimeout.current = setTimeout(() => {
       socket.emit(STOP_TYPING, { members, chatId });
       setIamTyping(false);
@@ -151,34 +163,24 @@ const Chat = ({ chatId, user }) => {
     try {
       const encryptedObject = await encryptMessage(message, sharedSecret);
       const encrypted = JSON.stringify(encryptedObject);
-      console.log("🔐 Encrypted message (string):", encrypted);
+      console.log("🔐 Encrypted message:", encrypted);
       socket.emit(NEW_MESSAGE, { chatId, members, message: encrypted });
       setMessage("");
     } catch (err) {
-      console.error("❌ Error encrypting or sending message:", err);
+      console.error("❌ Error encrypting message:", err);
     }
   };
-
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    if (chatDetails.isError) return navigate("/");
-  }, [chatDetails.isError]);
 
   const newMessageHandler = useCallback(
     async (data) => {
       if (data.chatId !== chatId) return;
       if (!sharedSecret) return;
       try {
-        const decrypted = await decryptMessage(data.message, sharedSecret);
+        const decrypted = await decryptMessage(data.message.content, sharedSecret);
         console.log("📩 Decrypted message:", decrypted);
         setMessages((prev) => [...prev, { ...data.message, content: decrypted }]);
       } catch (err) {
-        console.error("❌ Failed to decrypt:", err);
+        console.error("❌ Decryption failed:", err);
       }
     },
     [chatId, sharedSecret]
@@ -205,10 +207,7 @@ const Chat = ({ chatId, user }) => {
       if (data.chatId !== chatId) return;
       const messageForAlert = {
         content: data.message,
-        sender: {
-          _id: "admin",
-          name: "Admin",
-        },
+        sender: { _id: "admin", name: "Admin" },
         chat: chatId,
         createdAt: new Date().toISOString(),
       };
@@ -232,7 +231,7 @@ const Chat = ({ chatId, user }) => {
     <Skeleton>Loading...</Skeleton>
   ) : (
     <Fragment>
-      <Stack ref={containerRef} padding={"1rem"} spacing={"1rem"} height="90%" sx={{ overflowY: "auto" }}>
+      <Stack ref={containerRef} padding="1rem" spacing="1rem" height="90%" sx={{ overflowY: "auto" }}>
         {allMessages.map((i) => (
           <MessageComponent key={i._id} message={i} user={user} />
         ))}

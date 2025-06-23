@@ -1,4 +1,4 @@
-// crypto.js
+// ✅ Updated crypto.js with persistent key pair using IndexedDB
 
 export async function generateKeyPair() {
   return window.crypto.subtle.generateKey(
@@ -28,7 +28,7 @@ export async function importPublicKey(base64) {
 }
 
 export async function deriveSharedSecret(privateKey, publicKey) {
-  return window.crypto.subtle.deriveKey(
+  const sharedKey = await window.crypto.subtle.deriveKey(
     {
       name: "ECDH",
       public: publicKey,
@@ -38,15 +38,21 @@ export async function deriveSharedSecret(privateKey, publicKey) {
       name: "AES-GCM",
       length: 256,
     },
-    false,
+    true,
     ["encrypt", "decrypt"]
   );
+
+  const rawKey = await window.crypto.subtle.exportKey("raw", sharedKey);
+  console.log("🔐 Derived Shared Secret (raw bytes):", new Uint8Array(rawKey));
+  return sharedKey;
 }
 
 export async function encryptMessage(message, key) {
   const encoder = new TextEncoder();
   const data = encoder.encode(message);
-  const iv = window.crypto.getRandomValues(new Uint8Array(12)); // GCM IV
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+  console.log("🧪 IV used for encryption:", iv);
 
   const encrypted = await window.crypto.subtle.encrypt(
     {
@@ -57,15 +63,34 @@ export async function encryptMessage(message, key) {
     data
   );
 
-  return JSON.stringify({
+  return {
     ciphertext: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
     iv: Array.from(iv),
-  });
+  };
 }
 
 export async function decryptMessage(encryptedJson, key) {
-  const { ciphertext, iv } = JSON.parse(encryptedJson);
-  const data = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+  let parsed;
+  try {
+    parsed = typeof encryptedJson === "string" ? JSON.parse(encryptedJson) : encryptedJson;
+    if (typeof parsed === "string") parsed = JSON.parse(parsed);
+  } catch (e) {
+    console.error("❌ JSON parse failed:", encryptedJson);
+    throw e;
+  }
+
+  const { ciphertext, iv } = parsed;
+
+  console.log("🧪 Ciphertext to decode:", ciphertext);
+  console.log("🧪 IV used for decryption:", iv);
+
+  if (!ciphertext) throw new Error("Ciphertext missing");
+
+  const binaryStr = atob(ciphertext);
+  const data = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    data[i] = binaryStr.charCodeAt(i);
+  }
 
   const decrypted = await window.crypto.subtle.decrypt(
     {
@@ -78,4 +103,40 @@ export async function decryptMessage(encryptedJson, key) {
 
   const decoder = new TextDecoder();
   return decoder.decode(decrypted);
+}
+
+// ✅ IndexedDB Storage Functions
+export async function saveKeyPair(chatId, keyPair) {
+  const db = await openKeyDB();
+  const tx = db.transaction("keys", "readwrite");
+  await tx.objectStore("keys").put(keyPair.privateKey, `${chatId}_private`);
+  await tx.objectStore("keys").put(keyPair.publicKey, `${chatId}_public`);
+}
+
+export async function loadKeyPair(chatId) {
+  const db = await openKeyDB();
+  const tx = db.transaction("keys", "readonly");
+  const store = tx.objectStore("keys");
+  const privateKey = await promisifyRequest(store.get(`${chatId}_private`));
+  const publicKey = await promisifyRequest(store.get(`${chatId}_public`));
+  if (privateKey && publicKey) return { privateKey, publicKey };
+  return null;
+}
+
+function openKeyDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("keyStore", 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore("keys");
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function promisifyRequest(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
 }

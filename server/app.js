@@ -113,10 +113,8 @@ io.on("connection", (socket) => {
     socket.join(chatId);
   });
 
-  // Relay Diffie-Hellman public key to other users in the same chat room
   socket.on("public-key", ({ chatId, key }) => {
-    // Send to all other users in the same room
-    socket.to(chatId).emit("public-key", { key });
+    io.to(chatId).emit("public-key", { key });
   });
 
   socket.on(START_TYPING, ({ members, chatId }) => {
