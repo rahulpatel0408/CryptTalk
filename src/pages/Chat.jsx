@@ -1,3 +1,5 @@
+// Modified Chat.jsx with Debug Logs and join-room fix
+
 import React, {
   Fragment,
   useCallback,
@@ -31,6 +33,15 @@ import { removeNewMessagesAlert } from "../redux/reducers/chat";
 import { START_TYPING } from "../../server/constants/events";
 import { TypingLoader } from "../components/layout/Loaders";
 import { useNavigate } from "react-router-dom";
+
+import {
+  generateKeyPair,
+  exportPublicKey,
+  importPublicKey,
+  deriveSharedSecret,
+  encryptMessage,
+  decryptMessage,
+} from "../utils/crypto";
 
 const Chat = ({ chatId, user }) => {
   const containerRef = useRef(null);
@@ -68,36 +79,35 @@ const Chat = ({ chatId, user }) => {
     { isError: oldMessagesChunk.isError, error: oldMessagesChunk.error },
   ];
 
-  // console.log(chatDetails)
   const members = chatDetails?.data?.chat?.members;
 
-  const messageOnChange = (e) => {
-    setMessage(e.target.value);
-    if (!IamTyping) {
-      socket.emit(START_TYPING, { members, chatId });
-      setIamTyping(true);
-    }
+  const [sharedSecret, setSharedSecret] = useState(null);
 
-    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+  useEffect(() => {
+    socket.emit("join-room", { chatId });
 
-    typingTimeout.current = setTimeout(() => {
-      socket.emit(STOP_TYPING, { members, chatId });
-      setIamTyping(false);
-    }, [2000]);
-  };
+    let myKeyPair;
+    const initKeys = async () => {
+      myKeyPair = await generateKeyPair();
+      const publicKeyString = await exportPublicKey(myKeyPair.publicKey);
+      console.log("📤 Sending my public key:", publicKeyString);
+      socket.emit("public-key", { chatId, key: publicKeyString });
 
-  const handleFileOpen = (e) => {
-    dispatch(setIsFileMenu(true));
-    setFileMenuAncho(e.currentTarget);
-  };
+      socket.on("public-key", async ({ key }) => {
+        console.log("🔑 Received public key from peer:", key);
+        const otherPublicKey = await importPublicKey(key);
+        const secret = await deriveSharedSecret(myKeyPair.privateKey, otherPublicKey);
+        console.log("✅ Shared secret derived");
+        setSharedSecret(secret);
+      });
+    };
 
-  const submitHandler = (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-    socket.emit(NEW_MESSAGE, { chatId, members, message });
-    console.log({ chatId, members, message });
-    setMessage("");
-  };
+    initKeys();
+
+    return () => {
+      socket.off("public-key");
+    };
+  }, [chatId]);
 
   useEffect(() => {
     socket.emit(CHAT_JOINED, { userId: user._id, members });
@@ -111,6 +121,44 @@ const Chat = ({ chatId, user }) => {
     };
   }, [chatId]);
 
+  const messageOnChange = (e) => {
+    setMessage(e.target.value);
+    if (!IamTyping) {
+      socket.emit(START_TYPING, { members, chatId });
+      setIamTyping(true);
+    }
+
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+
+    typingTimeout.current = setTimeout(() => {
+      socket.emit(STOP_TYPING, { members, chatId });
+      setIamTyping(false);
+    }, 2000);
+  };
+
+  const handleFileOpen = (e) => {
+    dispatch(setIsFileMenu(true));
+    setFileMenuAncho(e.currentTarget);
+  };
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    if (!message.trim() || !sharedSecret) {
+      console.warn("Cannot send: missing message or sharedSecret");
+      return;
+    }
+
+    try {
+      const encryptedObject = await encryptMessage(message, sharedSecret);
+      const encrypted = JSON.stringify(encryptedObject);
+      console.log("🔐 Encrypted message (string):", encrypted);
+      socket.emit(NEW_MESSAGE, { chatId, members, message: encrypted });
+      setMessage("");
+    } catch (err) {
+      console.error("❌ Error encrypting or sending message:", err);
+    }
+  };
+
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -118,24 +166,27 @@ const Chat = ({ chatId, user }) => {
   }, [messages]);
 
   useEffect(() => {
-    //incase chat is not opening this is the cause
-    console.log(chatDetails.isError);
     if (chatDetails.isError) return navigate("/");
   }, [chatDetails.isError]);
 
   const newMessageHandler = useCallback(
-    (data) => {
+    async (data) => {
       if (data.chatId !== chatId) return;
-      setMessages((prev) => [...prev, data.message]);
-      // console.log(data)
+      if (!sharedSecret) return;
+      try {
+        const decrypted = await decryptMessage(data.message, sharedSecret);
+        console.log("📩 Decrypted message:", decrypted);
+        setMessages((prev) => [...prev, { ...data.message, content: decrypted }]);
+      } catch (err) {
+        console.error("❌ Failed to decrypt:", err);
+      }
     },
-    [chatId]
+    [chatId, sharedSecret]
   );
 
   const startTypingListener = useCallback(
     (data) => {
       if (data.chatId !== chatId) return;
-      console.log("typing", data);
       setUserTyping(true);
     },
     [chatId]
@@ -144,7 +195,6 @@ const Chat = ({ chatId, user }) => {
   const stopTypingListener = useCallback(
     (data) => {
       if (data.chatId !== chatId) return;
-      console.log("stop typing", data);
       setUserTyping(false);
     },
     [chatId]
@@ -156,7 +206,7 @@ const Chat = ({ chatId, user }) => {
       const messageForAlert = {
         content: data.message,
         sender: {
-          _id: "ljsklfdgvsdjklfjv",
+          _id: "admin",
           name: "Admin",
         },
         chat: chatId,
@@ -174,78 +224,36 @@ const Chat = ({ chatId, user }) => {
     [STOP_TYPING]: stopTypingListener,
   };
   useSocketEvents(socket, eventsHandler);
-
   useErrors(errors);
 
   const allMessages = [...oldMessages, ...messages];
-  // console.log(allMessages)
+
   return chatDetails.isLoading ? (
     <Skeleton>Loading...</Skeleton>
   ) : (
     <Fragment>
-      <Stack
-        ref={containerRef}
-        boxSizing={"border-box"}
-        padding={"1rem"}
-        spacing={"1rem"}
-        bgcolor={"rgba(247,247,247,1)"}
-        height={"90%"}
-        sx={{
-          overflowX: "hidden",
-          overflowY: "auto",
-        }}
-      >
+      <Stack ref={containerRef} padding={"1rem"} spacing={"1rem"} height="90%" sx={{ overflowY: "auto" }}>
         {allMessages.map((i) => (
           <MessageComponent key={i._id} message={i} user={user} />
         ))}
-
         {userTyping && <TypingLoader sender={message.sender} />}
-
         <div ref={bottomRef} />
       </Stack>
-      <form
-        style={{
-          height: "10%",
-          backgroundColor: "#FFFFFF",
-        }}
-      >
-        <Stack
-          direction={"row"}
-          height={"100%"}
-          alignItems={"center"}
-          position={"relative"}
-        >
-          <IconButton
-            sx={{
-              position: "absolute",
-              marginLeft: "1rem",
-            }}
-            onClick={handleFileOpen}
-          >
+      <form style={{ height: "10%", backgroundColor: "#FFFFFF" }}>
+        <Stack direction="row" height="100%" alignItems="center" position="relative">
+          <IconButton sx={{ position: "absolute", marginLeft: "1rem" }} onClick={handleFileOpen}>
             <AttachFileIcon />
           </IconButton>
           <InputBox
             placeholder="Type Message Here...."
             value={message}
             onChange={messageOnChange}
-            sx={{
-              width: "100%",
-              height: "100%",
-              color: "black",
-            }}
+            sx={{ width: "100%", height: "100%", color: "black" }}
           />
           <IconButton
             type="submit"
             onClick={submitHandler}
-            sx={{
-              bgcolor: "orange",
-              color: "white",
-              marginRight: "1rem",
-              padding: "0.5rem",
-              "&:hover": {
-                bgcolor: "error.dark",
-              },
-            }}
+            sx={{ bgcolor: "orange", color: "white", marginRight: "1rem", padding: "0.5rem", "&:hover": { bgcolor: "error.dark" } }}
           >
             <SendIcon />
           </IconButton>

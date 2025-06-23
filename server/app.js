@@ -108,6 +108,16 @@ io.on("connection", (socket) => {
       console.log(error);
     }
   });
+  // User joins a chat room to enable scoped broadcasting (for E2EE key exchange)
+  socket.on("join-room", ({ chatId }) => {
+    socket.join(chatId);
+  });
+
+  // Relay Diffie-Hellman public key to other users in the same chat room
+  socket.on("public-key", ({ chatId, key }) => {
+    // Send to all other users in the same room
+    socket.to(chatId).emit("public-key", { key });
+  });
 
   socket.on(START_TYPING, ({ members, chatId }) => {
     // console.log("start - typing", chatId);
@@ -141,7 +151,7 @@ io.on("connection", (socket) => {
     console.log("a user disconnected");
     userSocketIDs.delete(user._id.toString());
     onlineUsers.delete(user._id.toString());
-    socket.broadcast.emit(ONLINE_USERS,Array.from(onlineUsers))
+    socket.broadcast.emit(ONLINE_USERS, Array.from(onlineUsers));
   });
 });
 app.use(errorMiddleware);
