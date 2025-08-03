@@ -39,12 +39,12 @@ const newGroupChat = TryCatch(async (req, res, next) => {
 const getMyChats = TryCatch(async (req, res, next) => {
   const chats = await Chat.find({ members: req.user }).populate(
     "members",
-    "name avatar"
+    "name avatar publicKey" // Added publicKey to the fields to populate
   );
 
-  const getOtherMembers = (memebers, userId) => {
-    return memebers.find(
-      (members) => members._id.toString() !== userId.toString()
+  const getOtherMembers = (members, userId) => {
+    return members.find(
+      (member) => member._id.toString() !== userId.toString()
     );
   };
 
@@ -59,17 +59,59 @@ const getMyChats = TryCatch(async (req, res, next) => {
         : [otherMember.avatar.url],
       members: members.reduce((prev, cur) => {
         if (cur._id.toString() !== req.user.toString()) {
-          prev.push(cur._id);
+          prev.push({
+            _id: cur._id,
+            publicKey: cur.publicKey 
+          });
         }
         return prev;
       }, []),
+      otherMemberPublicKey: groupChat ? null : otherMember.publicKey,
     };
   });
+  console.log(transformedChats)
   return res.status(200).json({
     success: true,
     chats: transformedChats,
   });
 });
+
+
+// const getMyChats = TryCatch(async (req, res, next) => {
+//   const chats = await Chat.find({ members: req.user }).populate(
+//     "members",
+//     "name avatar"
+//   );
+
+//   const getOtherMembers = (memebers, userId) => {
+//     return memebers.find(
+//       (members) => members._id.toString() !== userId.toString()
+//     );
+//   };
+
+//   const transformedChats = chats.map(({ _id, name, members, groupChat }) => {
+//     const otherMember = getOtherMembers(members, req.user);
+//     return {
+//       _id,
+//       groupChat,
+//       name: groupChat ? name : otherMember.name,
+//       avatar: groupChat
+//         ? members.slice(0, 3).map(({ avatar }) => avatar.url)
+//         : [otherMember.avatar.url],
+//       members: members.reduce((prev, cur) => {
+//         if (cur._id.toString() !== req.user.toString()) {
+//           prev.push(cur._id);
+//         }
+//         return prev;
+//       }, []),
+//       otherMemberPublicKey: groupChat ? null : otherMember.publicKey,
+//     };
+//   });
+//   return res.status(200).json({
+//     success: true,
+//     chats: transformedChats,
+//   });
+// });
 
 const getMyGroups = TryCatch(async (req, res, next) => {
   const chats = await Chat.find({
@@ -235,6 +277,7 @@ const sendAttachments = TryCatch(async (req, res, next) => {
   const attachments = await uploadFilesToCloudinary(files);
   const messageForDB = {
     content: "",
+    encryptedContent: "",
     attachments,
     sender: me._id,
     chat: chatId,
@@ -264,18 +307,22 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 });
 
 const getChatDetails = TryCatch(async (req, res, next) => {
+
+  // console.log(req.query.populate, "here in chat details")
   if (req.query.populate === "true") {
     const chat = await Chat.findById(req.params.id)
-      .populate("members", "name avatar")
+      .populate("members", "name avatar publicKey")
       .lean();
 
     if (!chat) return next(new ErrorHandler("Chat not found", 404));
 
-    chat.members = chat.members.map(({ _id, name, avatar }) => ({
+    chat.members = chat.members.map(({ _id, name, avatar, publicKey }) => ({
       _id,
       name,
       avatar: avatar?.url,
+      publicKey,
     }));
+    // console.log(chat, "here in chat details")
     return res.status(200).json({
       success: true,
       chat,
@@ -284,12 +331,12 @@ const getChatDetails = TryCatch(async (req, res, next) => {
     const chat = await Chat.findById(req.params.id);
 
     if (!chat) return next(new ErrorHandler("Chat not found", 404));
-
+    // console.log(chat, "here")
     return res.status(200).json({
       success: true,
       chat,
     });
-  }
+  } 
 });
 
 const renameGroup = TryCatch(async (req, res, next) => {
@@ -365,25 +412,46 @@ const getMessages = TryCatch(async (req, res, next) => {
   const { page = 1 } = req.query;
   const resultPerPage = 20;
   const skip = (page - 1) * resultPerPage;
-  const chat = await Chat.findById(chatId);
+  const chat = await Chat.findById(chatId).populate("members", "name publicKey");
   if (!chat) return next(new ErrorHandler("Chat not found!", 404));
-  if (!chat.members.includes(req.user.toString()))
+  if (!chat.members.some(member => member._id.toString() === req.user.toString()))
     return next(new ErrorHandler("Not authorized to access this chat!", 403));
   const [messages, totalMessagesCount] = await Promise.all([
     Message.find({ chat: chatId })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(resultPerPage)
-      .populate("sender", "name")
+      .populate("sender", "name publicKey")
       .lean(),
     Message.countDocuments({ chat: chatId }),
   ]);
 
-  const totalPages = Math.ceil(totalMessagesCount / resultPerPage) || 0;
+  // For encrypted messages, include encrypted content and receiver details
+  const processedMessages = messages.map(msg => {
+    const receivers = chat.members
+      .filter(member => member._id.toString() !== msg.sender._id.toString())
+      .map(member => ({
+        _id: member._id,
+        name: member.name,
+        publicKey: member.publicKey
+      }));
+    return {
+      ...msg,
+      content: msg.encryptedContent || msg.content, // Return encrypted content for decryption on client
+      sender: {
+        _id: msg.sender._id,
+        name: msg.sender.name,
+        publicKey: msg.sender.publicKey
+      },
+      receiver: receivers // Add receiver array with _id, name, and publicKey
+    };
+  });
 
+  const totalPages = Math.ceil(totalMessagesCount / resultPerPage) || 0;
+  // console.log(processedMessages)
   return res.status(200).json({
     success: true,
-    message: messages.reverse(),
+    message: processedMessages.reverse(),
     totalPages,
   });
 });

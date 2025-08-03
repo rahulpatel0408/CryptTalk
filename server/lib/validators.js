@@ -6,6 +6,7 @@ const registerValidator= () => [
     body("bio", "Please enter bio").notEmpty(),
     body("password", "Please enter password").notEmpty(),
     body("username", "Please enter username").notEmpty(),
+    body("publicKey", "Please enter public key").notEmpty(),
 ];
 
 const loginValidator= () => [

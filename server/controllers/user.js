@@ -8,14 +8,14 @@ import { ErrorHandler } from "../utils/utility.js";
 import { NEW_REQUEST, REFETCH_CHATS } from "../constants/events.js";
 
 const newUser = TryCatch(async (req, res, next) => {
-  const { name, username, password, bio } = req.body;
+  const { name, username, password, bio, publicKey } = req.body;
 
   const file = req.file;
   if (!file) return next(new ErrorHandler("Please upload Avatar"));
 
+  if (!publicKey) return next(new ErrorHandler("Public key is required"));
 
   const result = await uploadFilesToCloudinary([file]);
-
 
   const avatar = {
     public_id: result[0].public_id,
@@ -27,7 +27,9 @@ const newUser = TryCatch(async (req, res, next) => {
     username,
     password,
     avatar,
+    publicKey,
   });
+  // console.log(user, "here")
   sendToken(res, user, 201, "user created");
 });
 
@@ -74,11 +76,13 @@ const searchUser = TryCatch(async (req, res) => {
     _id: { $nin: myFriends },
     name: { $regex: name, $options: "i" },
   });
-  const users = restUsers.map(({ _id, name, avatar }) => ({
+  const users = restUsers.map(({ _id, name, avatar, publicKey }) => ({
     _id,
     name,
     avatar: avatar.url,
+    publicKey,
   }));
+  // console.log(users, "here")
   res
     .status(200)
     .json({
@@ -195,6 +199,7 @@ const getMyFriends = TryCatch(async (req, res) => {
       _id: otherUser._id,
       name: otherUser.name,
       avatar: otherUser.avatar.url,
+      publicKey: otherUser.publicKey,
     };
   });
 

@@ -9,11 +9,14 @@ import { server } from "../components/constants/config";
 import { useDispatch } from "react-redux";
 import { userExists } from "../redux/reducers/auth";
 import toast from "react-hot-toast";
+import { storePassphrase } from "../utils/crypto";
 
 const Login = () => {
   const [privacy, setPrivacy] = useState(true);
+  const [passphrasePrivacy, setPassphrasePrivacy] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [passphrase, setPassphrase] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,14 +26,25 @@ const Login = () => {
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
   };
+  const handlePassphraseChange = (e) => {
+    setPassphrase(e.target.value);
+  };
 
   const dispatch = useDispatch();
 
   const handleButtonClick = async (e) => {
     e.preventDefault();
 
+    if (!passphrase.trim()) {
+      toast.error("Please enter your passphrase");
+      return;
+    }
+
     const toastId = toast.loading("Logging In.....");
     setIsLoading(true);
+
+    // Store passphrase locally
+    storePassphrase(passphrase);
 
     const config = {
       withCredentials: true,
@@ -93,6 +107,19 @@ const Login = () => {
               <div className="forgot">
                 <NavLink to="/reset">Forgot password?</NavLink>
               </div>
+            </div>
+            <div className="input">
+              <input
+                type={passphrasePrivacy ? "password" : "text"}
+                placeholder="Passphrase (for encryption)"
+                onChange={handlePassphraseChange}
+              />
+              <img
+                src={passwd_icon}
+                alt="Toggle visibility"
+                onClick={() => setPassphrasePrivacy(!passphrasePrivacy)}
+                style={{ cursor: "pointer" }}
+              />
             </div>
           </div>
           <div className="submit-container">

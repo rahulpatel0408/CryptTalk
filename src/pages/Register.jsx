@@ -14,12 +14,15 @@ import { userExists } from "../redux/reducers/auth";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { server } from "../components/constants/config";
+import { generatePrivateKeyFromPassphrase, generatePublicKey, storePassphrase } from "../utils/crypto";
 const Register = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [privacy, setPrivacy] = useState(true);
+  const [passphrasePrivacy, setPassphrasePrivacy] = useState(true);
+  const [passphrase, setPassphrase] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,27 +39,46 @@ const Register = () => {
   const handleNameChange = (e) => {
     setName(e.target.value);
   };
+  const handlePassphraseChange = (e) => {
+    setPassphrase(e.target.value);
+  };
 
   const dispatch = useDispatch();
 
   const handleButtonClick = async (e) => {
     e.preventDefault();
+    
+    if (!passphrase.trim()) {
+      toast.error("Please enter a passphrase");
+      return;
+    }
+
     const toastId = toast.loading("Registering please wait for a while.....");
     setIsLoading(true);
-    const formData = new FormData();
-    formData.append("avatar", avatar.file);
-    formData.append("name", name);
-    formData.append("bio", bio);
-    formData.append("username", username);
-    formData.append("password", password);
 
-    const config = {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    };
     try {
+      // Generate private key from passphrase
+      const privateKey = generatePrivateKeyFromPassphrase(passphrase);
+      const publicKey = generatePublicKey(privateKey);
+      
+      // Store passphrase locally
+      storePassphrase(passphrase);
+
+      const formData = new FormData();
+      formData.append("avatar", avatar.file);
+      formData.append("name", name);
+      formData.append("bio", bio);
+      formData.append("username", username);
+      formData.append("password", password);
+      formData.append("publicKey", publicKey.toString());
+
+      const config = {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+      
       const { data } = await axios.post(
         `${server}/api/v1/user/new`,
         formData,
@@ -149,6 +171,19 @@ const Register = () => {
                 src={passwd_icon}
                 alt="Toggle visibility"
                 onClick={() => setPrivacy(!privacy)}
+                style={{ cursor: "pointer" }}
+              />
+            </div>
+            <div className="input">
+              <input
+                type={passphrasePrivacy ? "password" : "text"}
+                placeholder="Passphrase (for encryption)"
+                onChange={handlePassphraseChange}
+              />
+              <img
+                src={passwd_icon}
+                alt="Toggle visibility"
+                onClick={() => setPassphrasePrivacy(!passphrasePrivacy)}
                 style={{ cursor: "pointer" }}
               />
             </div>

@@ -31,6 +31,10 @@ const schema = new Schema(
         required: true,
       },
     },
+    publicKey: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

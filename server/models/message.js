@@ -2,7 +2,14 @@ import mongoose, { Schema, Types, model } from "mongoose";
 
 const schema = new Schema(
   {
-    content: String,
+    content: {
+      type: String,
+      required: true,
+    },
+    encryptedContent: {
+      type: String,
+      required: true,
+    },
     attachments: [
       {
         public_id: {

@@ -9,15 +9,36 @@ const cookieOptions = {
   httpOnly: true,
   secure: true,
 };
-const connectDB = (uri) => {
-  mongoose
-    .connect(uri, { dbName: "CryptTalk" })
-    .then((data) => {
-      console.log(`connected to DB:${data.connection.host}`);
-    })
-    .catch((err) => {
-      throw err;
-    });
+
+// Function to clear all collections in the database
+// const clearDatabase = async () => {
+//   try {
+//     const collections = await mongoose.connection.db.listCollections().toArray();
+    
+//     for (const collection of collections) {
+//       await mongoose.connection.db.collection(collection.name).deleteMany({});
+//       console.log(`Cleared collection: ${collection.name}`);
+//     }
+    
+//     console.log("✅ Database cleared successfully");
+//   } catch (error) {
+//     console.error("❌ Error clearing database:", error);
+//   }
+// };
+
+const connectDB = async (uri) => {
+  try {
+    const data = await mongoose.connect(uri, { dbName: "CryptTalk" });
+    console.log(`connected to DB:${data.connection.host}`);
+    
+    // Clear database on startup
+    // console.log("🧹 Clearing database on startup...");
+    // await clearDatabase();
+    
+  } catch (err) {
+    console.error("❌ Database connection error:", err);
+    throw err;
+  }
 };
 
 const sendToken = (res, user, code, message) => {

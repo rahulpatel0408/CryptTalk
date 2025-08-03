@@ -74,9 +74,14 @@ io.on("connection", (socket) => {
   userSocketIDs.set(user._id.toString(), socket.id);
 
   socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
-    console.log(chatId, members, message);
+    
+    const recipients = members
+      .filter(member => member._id !== user._id.toString())
+      .map(member => `${member.name} (ID: ${member._id})`);
+    console.log(`Message from ${user.name} (ID: ${user._id}) to chat ${chatId} (Recipients: ${recipients.join(", ")}): ${message || message}`);
+
     const messageForRealTime = {
-      content: message,
+      content: message, 
       _id: uuid(),
       sender: {
         _id: user._id,
@@ -87,12 +92,14 @@ io.on("connection", (socket) => {
     };
 
     const messageForDB = {
-      content: message,
+      content: message, 
+      encryptedContent: message, 
       sender: user._id,
       chat: chatId,
     };
 
     const membersSocket = getSockets(members);
+    
 
     io.to(membersSocket).emit(NEW_MESSAGE, {
       chatId,
@@ -138,7 +145,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("a user disconnected");
+    console.log( user.name,"disconnected");
     userSocketIDs.delete(user._id.toString());
     onlineUsers.delete(user._id.toString());
     socket.broadcast.emit(ONLINE_USERS,Array.from(onlineUsers))

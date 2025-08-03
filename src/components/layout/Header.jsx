@@ -32,6 +32,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { userNotExists } from "../../redux/reducers/auth";
 import { setIsMobile, setIsSearch } from "../../redux/reducers/misc";
 import { resetNotificationCount } from "../../redux/reducers/chat";
+import { clearStoredPassphrase } from "../../utils/crypto";
 const Search = lazy(() => import("../specific/Search"));
 const Header = () => {
   const { user } = useSelector((state) => state.auth);
@@ -92,6 +93,8 @@ const Header = () => {
       const { data } = await axios.get(`${server}/api/v1/user/logout`, {
         withCredentials: true,
       });
+      // Clear stored passphrase
+      clearStoredPassphrase();
       dispatch(userNotExists());
       toast.success(data.message);
     } catch (error) {
